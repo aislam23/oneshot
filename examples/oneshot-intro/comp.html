@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>oneshot · урок</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+/* стиль islamov-tema.ru, тёмная тема */
+:root{
+  --bg:#0A0A0A; --ink:#ECEDF1; --muted:#9B9EA9; --accent:#6873FF; --glow:#2F3BFF; --card:#141414;
+  --edge:rgba(236,237,241,.10); --hair:rgba(236,237,241,.16); --ok:#3CCB7F;
+  --display:'Sofia Sans Extra Condensed','Arial Narrow',sans-serif; --text:'Golos Text',system-ui,sans-serif;
+  --hand:'Comforter Brush',cursive; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg)}
+body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,#121318 0%,var(--bg) 70%)}
+#ground{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(236,237,241,.07) 1.3px,transparent 1.6px)}
+#world{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}
+.a{position:absolute;left:0;top:0}
+.disp{font-family:var(--display);font-weight:900;text-transform:uppercase;line-height:.86;white-space:nowrap}
+.hand{font-family:var(--hand);color:var(--accent);line-height:1;white-space:nowrap}
+.mono{font-family:var(--mono)}
+.card{position:absolute;background:var(--card);border:1px solid var(--edge);border-radius:20px;box-sizing:border-box;box-shadow:0 40px 90px -40px rgba(0,0,0,.8)}
+.os-caret{display:inline-block;width:3px;height:1em;background:var(--accent);vertical-align:-.14em;margin-left:3px}
+
+/* партитура */
+#score{position:absolute;left:0;top:0;width:0;height:0}
+.staff{position:absolute;height:2px;background:var(--hair)}
+#waveDim,#waveLit{position:absolute;top:740px;height:160px;overflow:hidden}
+#waveDim svg path{fill:rgba(236,237,241,.10)}
+#waveLit svg path{fill:var(--glow);opacity:.55}
+.nh{position:absolute;width:30px;height:21px;margin:-10.5px 0 0 -15px;border-radius:50%;background:var(--muted);transform:rotate(-22deg)}
+.nh.big{background:var(--ink)}
+.stem{position:absolute;width:2px;background:var(--hair);transform-origin:50% 100%}
+.bar{position:absolute;width:4px;top:760px;height:120px;background:var(--hair)}
+.mnum{position:absolute;top:892px;font-size:54px;color:var(--muted)}
+#ph{position:absolute;top:690px;width:4px;height:230px;margin-left:-2px;background:var(--accent);box-shadow:0 0 18px var(--glow),0 0 40px rgba(47,59,255,.5)}
+#ph:before{content:"";position:absolute;left:-9px;top:-14px;border-left:11px solid transparent;border-right:11px solid transparent;border-top:15px solid var(--accent)}
+
+/* объекты сцен */
+#vid{width:340px;height:192px;overflow:hidden}
+#vid .pl{position:absolute;left:150px;top:66px;border-left:44px solid var(--ink);border-top:28px solid transparent;border-bottom:28px solid transparent}
+#vid .tr{position:absolute;left:22px;right:22px;bottom:18px;height:6px;border-radius:3px;background:var(--hair)}
+#vid .tr i{position:absolute;left:0;top:0;bottom:0;width:40%;border-radius:3px;background:var(--accent)}
+#mov{width:44px;height:44px;border-radius:50%;background:var(--accent);box-shadow:0 0 26px var(--glow)}
+#word{font-size:170px}
+#logoA{font-size:230px}
+#cc,#cx{font-size:84px;color:var(--accent)}
+#doc{width:400px;height:262px}
+#doc .hd{position:absolute;left:26px;top:20px;font:500 20px var(--mono);color:var(--muted)}
+#doc .ln{position:absolute;left:26px;font:500 24px/1 var(--text);white-space:nowrap}
+.fly{position:absolute;font:600 24px/1 var(--text);color:var(--ink);white-space:nowrap}
+#frm{width:300px;height:170px;border:3px solid var(--ink);border-radius:14px;box-sizing:border-box}
+#frm i{position:absolute;left:24px;top:24px;width:70px;height:40px;border-radius:8px;background:var(--hair)}
+.vfc{position:absolute;width:56px;height:56px;border-color:var(--accent);border-style:solid;border-width:0}
+#btn{width:270px;height:84px;border-radius:16px;background:var(--accent);color:#fff;text-align:center;font:900 44px/84px var(--display);text-transform:uppercase}
+#cur{position:absolute;left:0;top:0;width:40px;height:52px;transform-origin:5px 4px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+#html{width:250px;height:120px;font:700 40px/120px var(--mono);text-align:center;color:var(--accent)}
+#gsapc{width:380px;height:210px}
+#gsapc .t{position:absolute;left:26px;top:22px;font-size:60px}
+#gsapc .tk{position:absolute;left:26px;right:26px;height:12px;border-radius:6px;background:var(--hair)}
+#gsapc .tk i{position:absolute;top:0;bottom:0;border-radius:6px;background:var(--accent)}
+#strip .f{position:absolute;top:0;width:96px;height:56px;border:2px solid var(--hair);border-radius:8px;box-sizing:border-box}
+#strip .f i{position:absolute;top:18px;width:18px;height:18px;border-radius:50%;background:var(--accent)}
+#ball{width:56px;height:56px;border-radius:50%;background:var(--accent);box-shadow:0 0 30px var(--glow)}
+.sw{position:absolute;border:4px solid var(--accent);border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;transform:rotate(45deg)}
+#inst{font-size:140px}
+#term{width:1560px;height:250px;background:#0F1014}
+#term .bar3 i{position:absolute;top:20px;width:13px;height:13px;border-radius:50%;background:#2A2C33}
+#term .l{position:absolute;left:40px;font:500 28px/1 var(--mono);white-space:pre}
+#term .d{color:var(--muted)}
+#chat{width:980px;height:250px}
+#chat .me{position:absolute;right:30px;top:30px;max-width:800px;padding:20px 28px;border-radius:22px 22px 6px 22px;background:var(--glow);color:#fff;font:500 30px/1.25 var(--text);white-space:pre}
+#chat .me .lnk{color:#C9CEFF}
+#chat .re{position:absolute;left:30px;bottom:30px;font:500 28px var(--text);color:var(--muted);white-space:nowrap}
+.ck{display:inline-block;width:12px;height:22px;border-right:4px solid var(--ok);border-bottom:4px solid var(--ok);transform:rotate(45deg);margin:0 18px -2px 6px}
+#rules{font-size:560px;color:var(--ink)}
+.bnum{position:absolute;font-size:420px;color:var(--accent)}
+.rl{font-size:104px}
+.rl b{color:var(--accent);font-weight:900}
+.rw{font-size:78px}
+#rr{width:1040px;height:340px}
+#rr .cap{position:absolute;left:30px;top:20px;font:500 28px var(--mono);color:var(--muted)}
+#rr .cmd{position:absolute;right:30px;top:18px;font:600 26px var(--mono);color:var(--accent)}
+#rr svg{position:absolute;left:30px;top:120px}
+#rr .mn{position:absolute;width:22px;height:16px;margin:-8px 0 0 -11px;border-radius:50%;background:var(--ink);transform:rotate(-22deg)}
+#rr .mw{position:absolute;top:238px;font:600 24px var(--text);transform:translateX(-50%);white-space:nowrap}
+.cpt{width:280px;height:200px}
+.cpt svg{position:absolute;left:0;top:0}
+.cpt .t{position:absolute;left:22px;bottom:18px;font-size:44px}
+.cpt.pick{outline:4px solid var(--accent);outline-offset:-2px}
+#mo{background:var(--accent)}
+#mo .t{position:absolute;left:28px;top:24px;font-size:54px;color:var(--ink);white-space:nowrap}
+.gh{position:absolute;border:2px dashed rgba(104,115,255,.45);box-sizing:border-box}
+.hit{position:absolute;width:6px;border-radius:3px;background:var(--accent);transform-origin:50% 100%}
+#tie{position:absolute;height:8px;border-radius:4px;background:var(--accent);transform-origin:0 50%}
+#drf{width:330px;height:186px}
+#drf .t,#fin .t{position:absolute;left:0;right:0;text-align:center}
+#drf .t{top:56px;font-size:84px}
+#chk{width:360px;height:216px}
+#chk .r{position:absolute;left:28px;font:500 30px var(--text);white-space:nowrap}
+#fin{width:560px;height:315px;border:3px solid var(--accent)}
+#fin .t{top:84px;font-size:180px;color:var(--accent)}
+
+/* финал */
+#over{position:absolute;left:0;right:0;top:110px;text-align:center}
+#over .big{font-size:150px;color:var(--accent)}
+#over .sm{margin-top:22px;font:500 40px var(--text);color:var(--muted)}
+#mark{position:absolute;display:flex}
+#mark span{display:inline-block;font-size:300px;transform-origin:50% 92%}
+#link{font:600 46px var(--mono);color:var(--accent);white-space:pre}
+#mit{font:500 32px var(--text);color:var(--muted);white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="ground"></div>
+  <div id="world">
+    <div id="score">
+      <div id="waveDim"><svg id="svgDim"><path/></svg></div>
+      <div id="waveLit"><svg id="svgLit"><path/></svg></div>
+      <div id="staff"></div><div id="bars"></div><div id="stems"></div><div id="notes"></div>
+    </div>
+    <div id="objs">
+      <!-- A · вступление -->
+      <div id="vid" class="card"><div class="pl"></div><div class="tr"><i></i></div></div>
+      <svg id="mus" class="a" width="210" height="200" viewBox="0 0 210 200"><g fill="#6873FF"><ellipse cx="46" cy="164" rx="34" ry="24" transform="rotate(-22 46 164)"/><ellipse cx="160" cy="136" rx="34" ry="24" transform="rotate(-22 160 136)"/><rect x="72" y="26" width="9" height="140"/><rect x="186" y="0" width="9" height="140"/><polygon points="72,26 195,0 195,32 72,58"/></g></svg>
+      <div id="mov" class="a"></div>
+      <div id="word" class="a disp">слово</div>
+      <!-- B · что это -->
+      <div id="logoA" class="a disp">oneshot</div>
+      <div id="cc" class="a disp">Claude Code</div>
+      <div id="cx" class="a disp">Codex</div>
+      <!-- C · текст → партитура -->
+      <div id="doc" class="card"><div class="hd">vo/lines.txt</div><div class="ln" style="top:72px">Хорошее видео звучит…</div><div class="ln" style="top:118px">Каждое движение…</div><div class="ln" style="top:164px">Так работает oneshot…</div><div class="ln" style="top:210px;color:var(--muted)">…</div></div>
+      <div id="flies"></div>
+      <!-- D · нота = событие -->
+      <div id="hNote" class="a hand" style="font-size:110px">своя нота</div>
+      <div id="frm" class="a"><i></i></div>
+      <div id="vf" class="a"></div>
+      <div id="btn" class="a">Нажми</div>
+      <!-- E · движок -->
+      <div id="html" class="card">&lt;html&gt;</div>
+      <div id="gsapc" class="card"><div class="t disp">GSAP</div><div class="tk" style="top:110px"><i style="left:0;width:40%"></i></div><div class="tk" style="top:140px"><i style="left:30%;width:45%"></i></div><div class="tk" style="top:170px"><i style="left:60%;width:30%"></i></div></div>
+      <div id="strip" class="a"></div>
+      <div id="ball" class="a"></div>
+      <div id="snd" class="a"><div class="sw" style="left:0;top:0;width:40px;height:40px"></div><div class="sw" style="left:-20px;top:-20px;width:80px;height:80px"></div><div class="sw" style="left:-40px;top:-40px;width:120px;height:120px"></div></div>
+      <!-- F · установка -->
+      <div id="inst" class="a disp">Установка</div>
+      <div id="term" class="card"><div class="bar3"><i style="left:22px"></i><i style="left:44px"></i><i style="left:66px"></i></div><div class="l" id="t1" style="top:84px"></div><div class="l" id="t2" style="top:148px"></div></div>
+      <!-- G · через агента -->
+      <div id="chat" class="card"><div class="me" id="me"></div><div class="re" id="re"><i class="ck"></i>Готово: скилл oneshot установлен</div></div>
+      <!-- H · пять правил -->
+      <div id="rules" class="a disp">Пять правил</div>
+      <div id="bnums"></div>
+      <!-- I · 1 голос -->
+      <div id="r1" class="a disp rl"><b>1</b> · Голос</div>
+      <div id="r1a" class="a disp rw" style="color:var(--muted)">Текст</div>
+      <div id="r1b" class="a disp rw" style="color:var(--muted)">Тайминг</div>
+      <div id="r1c" class="a disp rw" style="color:var(--accent)">Картинка</div>
+      <!-- J · перезапись озвучки -->
+      <div id="rr" class="card"><div class="cap">старая озвучка → новая</div><div class="cmd" id="rrc"></div>
+        <svg width="980" height="90" viewBox="0 0 980 90"><path id="rrA" fill="rgba(104,115,255,.55)"/><path id="rrB" fill="rgba(104,115,255,.55)"/></svg>
+        <div class="mn" id="mn0"></div><div class="mn" id="mn1"></div><div class="mn" id="mn2"></div><div class="mn" id="mn3"></div>
+        <div class="mw" id="mw0">кадр</div><div class="mw" id="mw1">камера</div><div class="mw" id="mw2">кнопка</div><div class="mw" id="mw3">звук</div>
+      </div>
+      <!-- K · 2 три концепта -->
+      <div id="r2" class="a disp rl"><b>2</b> · Три концепта</div>
+      <div id="cp0" class="card cpt"><svg width="280" height="140"><circle cx="70" cy="70" r="14" fill="#6873FF"/><circle cx="140" cy="70" r="26" fill="none" stroke="#6873FF" stroke-width="6"/><circle cx="214" cy="70" r="40" fill="none" stroke="#ECEDF1" stroke-width="4" opacity=".5"/></svg><div class="t disp">Точка</div></div>
+      <div id="cp1" class="card cpt"><svg width="280" height="140"><path d="M20 90 C 80 20, 130 130, 190 60 S 250 50, 262 70" fill="none" stroke="#6873FF" stroke-width="6" stroke-linecap="round"/></svg><div class="t disp">Нить</div></div>
+      <div id="cp2" class="card cpt"><svg width="280" height="140"><g stroke="#ECEDF1" stroke-opacity=".3" stroke-width="2"><line x1="20" y1="50" x2="260" y2="50"/><line x1="20" y1="70" x2="260" y2="70"/><line x1="20" y1="90" x2="260" y2="90"/></g><g fill="#6873FF"><ellipse cx="70" cy="90" rx="12" ry="8"/><ellipse cx="140" cy="60" rx="12" ry="8"/><ellipse cx="210" cy="80" rx="12" ry="8"/></g></svg><div class="t disp">Партитура</div></div>
+      <!-- L · 3 без склеек -->
+      <div id="r3" class="a disp rl"><b>3</b> · Без склеек</div>
+      <div id="gh0" class="gh"></div><div id="gh1" class="gh"></div>
+      <div id="mo" class="a"><div class="t disp" id="mot">Сцена 2</div></div>
+      <!-- M · 4 темп -->
+      <div id="r4" class="a disp rl"><b>4</b> · Темп</div>
+      <div id="hits"></div><div id="tie"></div>
+      <div id="hP" class="a hand" style="font-size:96px">пауза</div>
+      <!-- N · 5 черновик -->
+      <div id="r5" class="a disp rl"><b>5</b> · Черновик и проверка</div>
+      <div id="drf" class="card"><div class="t disp">1080p</div></div>
+      <div id="chk" class="card"><div class="r" style="top:30px"><i class="ck"></i>нить</div><div class="r" style="top:86px"><i class="ck"></i>ритм</div><div class="r" style="top:142px"><i class="ck"></i>текст</div></div>
+      <div id="fin" class="card"><div class="t disp">4K</div></div>
+    </div>
+    <div id="ph"></div>
+    <!-- финал -->
+    <div id="mark" class="disp"></div>
+    <div id="link" class="a"></div>
+    <div id="mit" class="a">MIT · бесплатно, в том числе для коммерции</div>
+    <div id="hEnd" class="a hand" style="font-size:110px">пусть звучит</div>
+    <svg id="cur" viewBox="0 0 34 44"><path d="M4 3 L30 22 L18 24 L26 40 L20 43 L12 27 L4 36 Z" fill="#ECEDF1" stroke="#0A0A0A" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div>
+  <div id="over"><div class="big disp" id="ovB">Бесплатно</div><div class="sm" id="ovS">даже для коммерческих проектов · лицензия MIT</div></div>
+</div>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/oneshot.js"></script>
+<script src="vo/plan.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// КОНЦЕПТ «Партитура». Ось X мира — это время голоса: 1 секунда = 300 px. По нотному стану идёт волна
+// озвучки и курсор воспроизведения. Ключевое слово — нота; когда курсор её проходит, нота загорается,
+// вырастает штиль, и на нём распускается объект сцены. Камера стоит, пока курсор пересекает «страницу»,
+// и переезжает на следующую. Нить через весь ролик — стан и курсор. В финале партитура складывается
+// гармошкой в один кадр, над ним падает имя.
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+const F = OS.film({ duration: VO.total, grid: 64 });
+const X0 = 600, PX = 300, X = t => X0 + t * PX, LEN = X(VO.total) + 400;
+const SY = 820, pitchY = p => 860 - p * 10;               // стан: линии на 780…860, нота p = 0…8
+const $ = s => document.querySelector(s);
+const at = (el, x, y) => { el = typeof el === 'string' ? $(el) : el; el.style.left = x + 'px'; el.style.top = y + 'px'; return el; };
+const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.7, 1318.5, 1568];
+
+// ── стан и волна голоса ──
+for (let i = 0; i < 5; i++) { const d = document.createElement('div'); d.className = 'staff'; d.style.cssText = `left:${X0 - 300}px;top:${779 + i * 20}px;width:${LEN - X0 + 300}px`; $('#staff').appendChild(d); }
+{ const env = VO.env, n = env.length, w = LEN, h = 160, top = [], bot = [];
+  for (let i = 0; i < n; i++) { const x = X(i / VO.envRate), a = 6 + env[i] * 62; top.push(`${x.toFixed(1)} ${(80 - a).toFixed(1)}`); bot.push(`${x.toFixed(1)} ${(80 + a).toFixed(1)}`); }
+  const d = `M${X0} 80 L${top.join(' L')} L${bot.reverse().join(' L')} Z`;
+  for (const id of ['svgDim', 'svgLit']) { const s = $('#' + id); s.setAttribute('width', w); s.setAttribute('height', h); s.querySelector('path').setAttribute('d', d); }
+  $('#waveDim').style.cssText += `;left:0;width:${w}px`; $('#waveLit').style.cssText += ';left:0';
+}
+
+// ── ноты: слово → нота → (штиль → объект) ──
+const NOTES = [], OBJS = [];
+function note(t, p, o = {}) {
+  const n = { t, p, big: !!o.obj, top: o.top ?? pitchY(p) - (o.obj ? 0 : 70) };
+  const h = document.createElement('div'); h.className = 'nh' + (n.big ? ' big' : ''); at(h, X(t), pitchY(p)); $('#notes').appendChild(h); n.el = h;
+  const s = document.createElement('div'); s.className = 'stem'; const sx = X(t) + 13, y1 = pitchY(p) - 4, y0 = n.top;
+  s.style.cssText = `left:${sx}px;top:${y0}px;height:${Math.max(0, y1 - y0)}px`; $('#stems').appendChild(s); n.stem = s;
+  F.tl.fromTo(h, { scale: 0.6, backgroundColor: '#3A3D46' }, { scale: 1, backgroundColor: n.big ? '#ECEDF1' : '#9B9EA9', duration: 0.01, immediateRender: false }, 0);
+  F.tl.fromTo(h, { scale: 1.7, backgroundColor: '#6873FF' }, { scale: 1, backgroundColor: n.big ? '#6873FF' : '#9B9EA9', duration: 0.5, ease: 'power3.out', immediateRender: false }, t);
+  gsap.set(s, { scaleY: 0 }); F.tl.fromTo(s, { scaleY: 0 }, { scaleY: 1, duration: n.big ? 0.32 : 0.2, ease: 'power3.out', immediateRender: false }, t);
+  if (o.obj) { F.pop(o.obj, t + 0.12, o.pop || {}); OBJS.push({ obj: o.obj, t }); }
+  F.sound(t, 'tick', { x: X(t), f: PENTA[Math.min(8, p)], gain: n.big ? 1 : 0.55 });
+  NOTES.push(n); return n;
+}
+// нота на слово фразы i
+const N = (i, w, p, o) => note(F.W(i, w), p, o);
+// декоративные ноты: длинные слова без своей ноты, чтобы партитура звучала целиком
+function decorate(skip) {
+  VO.lines.forEach(l => { let k = 0; l.words.forEach((w, j) => {
+    if (w.w.length < 6 || k >= 3) return; if (NOTES.some(n => Math.abs(n.t - w.t) < 0.35) || skip.some(([a, b]) => w.t >= a && w.t <= b)) return;
+    note(w.t, (l.i * 3 + j * 5) % 9); k++; }); });
+}
+
+// ═══ A · вступление (фразы 1–2) ═══
+at('#vid', X(F.W(1, 'видео')) - 170, 360);            N(1, 'видео', 2, { obj: '#vid', top: 552 });
+at('#mus', X(F.W(1, 'музыка')) - 60, 330);            N(1, 'музыка', 5, { obj: '#mus', top: 520 });
+F.to('#vid .tr i', F.W(1, 'видео') + 0.2, { width: '100%', duration: 2.2, ease: 'none' });
+{ const t = F.W(2, 'движение'); at('#mov', X(t) - 22, 520); N(2, 'движение', 3, { obj: '#mov', top: 564 });
+  F.to('#mov', t + 0.35, { keyframes: [{ x: 120, y: -150, duration: 0.3, ease: 'power2.out' }, { x: 240, y: 0, duration: 0.3, ease: 'power2.in' }, { scaleY: 0.7, scaleX: 1.25, duration: 0.08 }, { scaleY: 1, scaleX: 1, duration: 0.25, ease: 'back.out(3)' }] }); }
+at('#word', X(F.W(2, 'слово')) - 140, 360);            N(2, 'слово', 6, { obj: '#word', top: 508, pop: { y: -60, from: 1.25, ease: 'expo.out', dur: 0.45 } });
+
+// ═══ B · что это (фраза 3) ═══
+at('#logoA', X(F.W(3, 'oneshot')) - 250, 250);       N(3, 'oneshot', 4, { obj: '#logoA', top: 450, pop: { y: 60, from: 0.95, ease: 'expo.out', dur: 0.6 } });
+at('#cc', X(F.W(3, 'Claude')) - 120, 520);            N(3, 'Claude', 2, { obj: '#cc', top: 596 });
+at('#cx', X(F.W(3, 'Codex')) - 80, 620);              N(3, 'Codex', 5, { obj: '#cx', top: 692 });
+
+// ═══ C · текст → партитура (фраза 4) ═══
+{ const tt = F.W(4, 'текст'); at('#doc', X(tt) - 200, 250); N(4, 'текст', 3, { obj: '#doc', top: 512 });
+  const tp = F.W(4, 'партитуру'), words = ['Хорошее', 'видео', 'звучит', 'музыка'];
+  words.forEach((w, i) => { const f = document.createElement('div'); f.className = 'fly'; f.textContent = w; $('#flies').appendChild(f);
+    const sx = X(tt) - 174 + i * 92, sy = 322, tx = X(tp) + 40 + i * 70, ty = pitchY([2, 5, 3, 6][i]) - 12; at(f, sx, sy); gsap.set(f, { autoAlpha: 0 });
+    F.tl.to(f, { autoAlpha: 1, duration: 0.15 }, tp - 0.6 + i * 0.09);
+    F.tl.to(f, { keyframes: [{ x: (tx - sx) * 0.5, y: -110, duration: 0.3, ease: 'power2.out' }, { x: tx - sx, y: ty - sy, scale: 0.4, duration: 0.32, ease: 'power2.in' }, { autoAlpha: 0, duration: 0.08 }] }, tp - 0.5 + i * 0.09);
+    note(tp + 0.18 + i * 0.09, [2, 5, 3, 6][i]); }); }
+
+// ═══ D · нота = событие (фраза 5) ═══
+at('#hNote', X(F.W(5, 'нота')) - 120, 330); N(5, 'нота', 5, { obj: '#hNote', top: 470, pop: { y: 30, from: 1, rot: -4, ease: 'expo.out', dur: 0.6 } });
+{ const tk = F.W(5, 'кадр'); at('#frm', X(tk) - 150, 380); N(5, 'кадр', 2, { obj: '#frm', top: 550 });
+  const tc = F.W(5, 'камера'); const vx = X(tc) - 190, vy = 340; at('#vf', vx, vy);
+  [['left', 'top'], ['right', 'top'], ['left', 'bottom'], ['right', 'bottom']].forEach(([h, v]) => { const c = document.createElement('div'); c.className = 'vfc';
+    c.style.cssText += `;${h}:0;${v}:0;border-${h}-width:6px;border-${v}-width:6px;border-${v}-${h}-radius:12px`; $('#vf').appendChild(c); });
+  $('#vf').style.width = '380px'; $('#vf').style.height = '240px';
+  N(5, 'камера', 4, { obj: '#vf', top: 580, pop: { from: 1.4, y: 0, ease: 'expo.out', dur: 0.5 } });
+  F.to('#vf', tc + 0.5, { x: 70, duration: 0.9, ease: 'power3.inOut' });
+  const tb = F.W(5, 'кнопка'); at('#btn', X(tb) - 100, 420); N(5, 'кнопка', 6, { obj: '#btn', top: 504 });
+  F.to('#btn', tb + 0.55, { keyframes: [{ scale: 0.88, duration: 0.07 }, { scale: 1, duration: 0.4, ease: 'back.out(4)' }] });
+  F.to('#btn', tb + 0.55, { backgroundColor: '#3CCB7F', duration: 0.12 });
+  F.text('#btn', tb + 0.6, 'Готово'); F.text('#btn', 0, 'Нажми');
+  F.cursor('#cur', { path: [{ t: tb - 0.2, x: X(tb) + 260, y: 640 }, { t: tb + 0.5, x: X(tb) + 40, y: 470, ease: 'power3.out' }, { t: tb + 1.4, x: X(tb) + 40, y: 470 }, { t: tb + 2.0, x: X(tb) + 300, y: 700 }],
+    clicks: [tb + 0.55], show: [[tb - 0.2, tb + 2.0]] }); }
+
+// ═══ E · движок (фраза 6) ═══
+{ const t1 = F.W(6, 'HTML'); at('#html', X(t1) - 125, 420); N(6, 'HTML', 3, { obj: '#html', top: 540 });
+  const t2 = F.W(6, 'GSAP'); at('#gsapc', X(t2) - 120, 190); N(6, 'GSAP', 5, { obj: '#gsapc', top: 400 });
+  $('#gsapc').querySelectorAll('.tk i').forEach((e, i) => F.tl.fromTo(e, { scaleX: 0 }, { scaleX: 1, transformOrigin: '0 50%', duration: 0.5, ease: 'power3.out', immediateRender: false }, t2 + 0.3 + i * 0.15));
+  const t3 = F.W(6, 'кадр'); at('#strip', X(t3) - 60, 470);
+  for (let i = 0; i < 5; i++) { const f = document.createElement('div'); f.className = 'f'; f.style.left = (i * 108) + 'px'; f.innerHTML = `<i style="left:${8 + i * 14}px"></i>`; $('#strip').appendChild(f); }
+  N(6, 'кадр', 2, { top: 526 }); F.popEach('#strip .f', [0, 1, 2, 3, 4].map(i => t3 + 0.1 + i * 0.12), { y: 16 });
+  const t4 = F.W(6, 'размытием'); at('#ball', X(t4) - 230, 250); N(6, 'размытием', 6, { obj: '#ball', top: 306 });
+  F.to('#ball', t4 + 0.4, { x: 420, duration: 0.32, ease: 'expo.inOut' }); F.sound(t4 + 0.4, 'whoosh', { x: X(t4), dur: 0.4, f0: 600, f1: 4200 });
+  const t5 = F.W(6, 'звуком'); at('#snd', X(t5) + 120, 520); N(6, 'звуком', 4, { obj: '#snd', top: 560 });
+  $('#snd').querySelectorAll('.sw').forEach((e, i) => F.tl.fromTo(e, { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.45, ease: 'power3.out', immediateRender: false }, t5 + 0.15 + i * 0.12)); }
+
+// ═══ F · установка (фразы 7–8) ═══
+const REPO = 'github.com/aislam23/oneshot';
+{ const t0 = F.W(7, 'Установка'); at('#inst', X(t0) - 60, 150); N(7, 'Установка', 3, { obj: '#inst', top: 272 });
+  const tc = F.W(7, 'команда'); at('#term', X(tc) - 340, 360); N(7, 'команда', 5, { obj: '#term', top: 610, pop: { from: 0.96, y: 30, ease: 'expo.out' } });
+  F.type('#t1', F.L(8), [['d', '$ '], ['', `git clone https://${REPO} ~/.claude/skills/oneshot`]], { cps: 26 });
+  F.type('#t2', F.W(8, 'ставите') - 0.2, [['d', '$ '], ['', 'cd ~/.claude/skills/oneshot && npm install']], { cps: 30 });
+  F.text('#t2', 0, '');
+  N(8, 'репозиторий', 2); N(8, 'зависимости', 6);
+  for (let i = 0; i < 40; i++) F.sound(F.L(8) + i * 0.075, 'key', { x: X(F.L(8)), gain: 0.6 + (i % 3) * 0.2 }); }
+
+// ═══ G · через агента (фраза 9) ═══
+{ const ta = F.W(9, 'агенту'); at('#chat', X(ta) - 280, 300); N(9, 'агенту', 2, { obj: '#chat', top: 550, pop: { from: 0.96, y: 30, ease: 'expo.out' } });
+  F.type('#me', F.W(9, 'напишите'), [['', 'Установи oneshot\n'], ['lnk', REPO]], { cps: 24, caret: false });
+  F.pop('#re', F.E(9) + 0.05, { y: 10, from: 1 }); N(9, 'установи', 5); F.sound(F.E(9) + 0.05, 'tick', { f: 1318.5, gain: 0.9 }); }
+
+// ═══ H · пять правил (фраза 10) — общий план тактов ═══
+const RB = [F.L(11) - 0.3, F.L(13) - 0.2, F.L(14) - 0.2, F.L(15) - 0.2, F.L(16) - 0.2, F.E(16) + 0.4];   // тактовые черты
+RB.forEach((t, i) => { const b = document.createElement('div'); b.className = 'bar'; b.style.left = (X(t) - 2) + 'px'; $('#bars').appendChild(b);
+  if (i < 5) { const m = document.createElement('div'); m.className = 'mnum disp'; m.textContent = i + 1; m.style.left = (X(t) + 14) + 'px'; $('#bars').appendChild(m);
+    F.to(m, F.L(10) - 0.2, { autoAlpha: 0, duration: 0.3 }); F.to(m, F.L(11), { autoAlpha: 1, duration: 0.4 });   // на общем плане есть крупные номера
+    const big = document.createElement('div'); big.className = 'bnum disp'; big.textContent = i + 1; at(big, X(t) + 120, 320); $('#bnums').appendChild(big);
+    F.pop(big, F.W(10, 'пять') + 0.1 + i * 0.13, { y: 80, from: 0.8, ease: 'expo.out' }); F.leave(big, F.L(11) - 0.5, { dur: 0.3, y: -60 }); } });
+at('#rules', X(F.L(11)) + 200, -420); F.rise('#rules', F.W(10, 'правил'), { y: 120 }); F.leave('#rules', F.L(11) - 0.5, { dur: 0.3, y: -100 });
+F.sound(F.W(10, 'пять'), 'swell', { dur: 2.2, f: 196 });
+
+// ═══ I · 1 голос (фраза 11) ═══
+at('#r1', X(F.W(11, 'Первое')) - 40, 140); N(11, 'Первое', 4, { obj: '#r1', top: 240 }); N(11, 'голоса', 6);
+at('#r1a', X(F.W(11, 'текст')) - 60, 300); N(11, 'текст', 2, { obj: '#r1a', top: 370 });
+at('#r1b', X(F.W(11, 'тайминг')) - 70, 410); N(11, 'тайминг', 4, { obj: '#r1b', top: 480 });
+at('#r1c', X(F.W(11, 'картинка')) - 80, 520); N(11, 'картинка', 6, { obj: '#r1c', top: 590 });
+
+// ═══ J · перезапись озвучки (фраза 12) ═══
+{ const t0 = F.W(12, 'озвучку'), tc = F.W(12, 'команда'), tm = F.W(12, 'переезжают');
+  at('#rr', X(t0) - 260, 180); N(12, 'озвучку', 3, { obj: '#rr', top: 520, pop: { from: 0.96, y: 30, ease: 'expo.out' } });
+  const wave = (seed, x0, x1) => { const pts = [], bot = []; for (let i = 0; i <= 120; i++) { const x = i * 980 / 120; let a = 0;
+      for (const [c, w] of [[x0, 1], [x1, 1], [(x0 + x1) / 2 + 260, 0.8], [x1 + 240, 0.9]]) a += w * Math.exp(-((x - c) ** 2) / (2 * 55 ** 2));
+      a = 4 + 36 * Math.min(1, a) * (0.75 + 0.25 * Math.sin(i * seed)); pts.push(`${x.toFixed(1)} ${(45 - a).toFixed(1)}`); bot.push(`${x.toFixed(1)} ${(45 + a).toFixed(1)}`); }
+    return `M0 45 L${pts.join(' L')} L${bot.reverse().join(' L')} Z`; };
+  const A = [150, 380, 560, 800], B = [240, 430, 690, 900];
+  $('#rrA').setAttribute('d', wave(1.7, A[0], A[1])); $('#rrB').setAttribute('d', wave(2.9, B[0], B[1]));
+  gsap.set('#rrB', { opacity: 0 }); F.to('#rrA', tm, { opacity: 0, duration: 0.35 }); F.to('#rrB', tm, { opacity: 1, duration: 0.35 });
+  A.forEach((x, i) => { at('#mn' + i, 30 + x, 205); $('#mw' + i).style.left = (30 + x) + 'px';
+    F.to(['#mn' + i, '#mw' + i], tm + 0.05 + i * 0.06, { x: B[i] - x, duration: 0.7, ease: 'back.out(1.6)' }); });
+  F.type('#rrc', tc - 0.2, '$ oneshot vo audio voice.mp3', { cps: 30, caret: false });
+  N(12, 'команда', 5); N(12, 'переезжают', 6); N(12, 'новые', 2); F.sound(tm, 'whoosh', { x: X(tm), dur: 0.5 }); }
+
+// ═══ K · 2 три концепта (фраза 13) ═══
+{ const t3 = F.W(13, 'три'), t1 = F.W(13, 'один'); at('#r2', X(F.W(13, 'Второе')) - 40, 120);
+  N(13, 'Второе', 4, { obj: '#r2', top: 222 });
+  const cx = X(F.W(13, 'концепта')); [-330, -30, 270].forEach((dx, i) => { at('#cp' + i, cx + dx, 300); note(t3 + 0.15 * i, [2, 4, 6][i], { obj: '#cp' + i, top: 500 }); });
+  F.to('#cp1', t1 + 0.1, { y: -26, scale: 1.06, duration: 0.5, ease: 'back.out(2)' });
+  F.seg('#cp1', t1, t1, (k, t, tr) => $('#cp1').classList.toggle('pick', tr >= t1 + 0.05));
+  ['#cp0', '#cp2'].forEach((s, i) => F.to(s, t1 + 0.3 + i * 0.08, { y: 330, scale: 0.4, autoAlpha: 0, duration: 0.5, ease: 'power3.in' }));
+  F.cursor('#cur', { path: [{ t: t1 - 0.9, x: cx + 420, y: 700 }, { t: t1 - 0.05, x: cx + 140, y: 430, ease: 'power3.out' }, { t: t1 + 0.9, x: cx + 140, y: 430 }], clicks: [t1 + 0.02], show: [[t1 - 0.9, t1 + 0.9]] }); }
+
+// ═══ L · 3 без склеек (фраза 14) ═══
+{ at('#r3', X(F.W(14, 'Третье')) - 40, 120); N(14, 'Третье', 4, { obj: '#r3', top: 222 });
+  const ta = F.W(14, 'склеек'), tb = F.W(14, 'прошлой'), tc = F.W(14, 'переходит'), td = F.W(14, 'следующую');
+  const R0 = { x: X(ta) - 60, y: 400, w: 120, h: 120, r: 16 }, R1 = { x: X(tb) - 90, y: 360, w: 180, h: 180, r: 90 }, R2 = { x: X(tc) - 120, y: 300, w: 520, h: 290, r: 22 };
+  F.place('#mo', R0); N(14, 'склеек', 3, { obj: '#mo', top: 520 });
+  F.morph('#mo', tb, 0.6, R1, 'expo.inOut'); N(14, 'прошлой', 5);
+  F.morph('#mo', tc, 0.6, R2, 'expo.inOut'); N(14, 'переходит', 2);
+  F.to('#mo', tc + 0.3, { backgroundColor: '#141414', duration: 0.4 }); F.to('#mo', tc, { boxShadow: '0 0 0 2px #6873FF', duration: 0.3 });
+  gsap.set('#mot', { autoAlpha: 0 }); F.pop('#mot', td, { y: 24, from: 1 }); N(14, 'следующую', 6);
+  F.place('#gh0', R0); F.place('#gh1', R1); gsap.set(['#gh0', '#gh1'], { autoAlpha: 0 });
+  F.to('#gh0', tb + 0.1, { autoAlpha: 1, duration: 0.3 }); F.to('#gh1', tc + 0.1, { autoAlpha: 1, duration: 0.3 });
+  F.sound(tb, 'whoosh', { x: X(tb), dur: 0.4 }); F.sound(tc, 'whoosh', { x: X(tc), dur: 0.45 }); }
+
+// ═══ M · 4 темп (фраза 15) ═══
+{ at('#r4', X(F.W(15, 'Четвёртое')) - 40, 120); N(15, 'Четвёртое', 4, { obj: '#r4', top: 222 });
+  const tk = F.W(15, 'Короткие');
+  for (let i = 0; i < 6; i++) { const t = tk + 0.1 + i * 0.13, p = [6, 4, 7, 3, 6, 5][i]; note(t, p);
+    const h = document.createElement('div'); h.className = 'hit'; h.style.cssText = `left:${X(t) - 3}px;top:${pitchY(p) - 200}px;height:150px`; $('#hits').appendChild(h);
+    F.tl.fromTo(h, { scaleY: 0, autoAlpha: 1 }, { scaleY: 1, duration: 0.1, ease: 'power4.out', immediateRender: false }, t);
+    F.tl.to(h, { autoAlpha: 0.25, duration: 0.6 }, t + 0.12); }
+  const tl = F.W(15, 'длинные'); const tie = $('#tie'); tie.style.cssText += `;left:${X(tl)}px;top:${pitchY(4) - 4}px;width:${(F.E(15) + 0.3 - tl) * PX}px`;
+  note(tl, 4); F.tl.fromTo(tie, { scaleX: 0 }, { scaleX: 1, duration: F.E(15) + 0.3 - tl, ease: 'none', immediateRender: false }, tl);
+  at('#hP', X(F.W(15, 'паузы')) - 40, 520); F.rise('#hP', F.W(15, 'паузы')); }
+
+// ═══ N · 5 черновик и проверка (фраза 16) ═══
+{ at('#r5', X(F.W(16, 'Пятое')) - 40, 120); N(16, 'Пятое', 4, { obj: '#r5', top: 222 });
+  const td = F.W(16, 'черновик'), tp = F.W(16, 'проверка'), tf = F.W(16, '4K');
+  at('#drf', X(td) - 160, 330); N(16, 'черновик', 2, { obj: '#drf', top: 516 });
+  at('#chk', X(tp) - 60, 300); N(16, 'проверка', 5, { obj: '#chk', top: 516 });
+  $('#chk').querySelectorAll('.r').forEach((r, i) => F.pop(r, tp + 0.25 + i * 0.2, { y: 10, from: 1 }));
+  at('#fin', X(tf) - 30, 270); N(16, '4K', 6, { obj: '#fin', top: 585, pop: { from: 0.6, y: 0, ease: 'expo.out', dur: 0.6 } });
+  F.sound(tf + 0.12, 'thump', { x: X(tf) }); }
+
+// декоративные ноты везде, кроме мест, где уже тесно
+decorate([[F.L(10) - 0.5, F.L(11)], [F.L(15), F.E(15) + 0.5]]);
+
+// ═══ курсор воспроизведения ═══
+const FOLD0 = F.L(17) + 4.2, FOLD1 = FOLD0 + 1.6, CX = X(45), C = 1650 / (LEN - X0);       // гармошка
+F.seg('#ph', 0, VO.total, (k, t) => {
+  const ph = $('#ph'); let x, op = 1;
+  if (t < FOLD0) x = X(t);
+  else if (t < F.L(19) + 1.2) { x = X(FOLD0); op = Math.max(0, 1 - (t - FOLD0) / 0.3); }
+  else { const u = gsap.parseEase('power2.inOut')(Math.min(1, (t - F.L(19) - 1.2) / 1.5)); x = CX + (X0 - CX) * C + u * (LEN - X0) * C; op = Math.min(1, (t - F.L(19) - 1.2) / 0.15); }
+  ph.style.left = x + 'px'; ph.style.opacity = op;
+  $('#waveLit').style.width = Math.max(0, Math.min(t, FOLD0) < FOLD0 ? X(t) : LEN) + 'px';
+});
+
+// ═══ финал: обзор → гармошка → имя ═══
+{ const t17 = F.L(17);
+  gsap.set('#over', { autoAlpha: 0 }); F.rise('#ovB', F.W(17, 'бесплатный'), { y: 50 }); F.rise('#ovS', F.W(17, 'коммерческих') - 0.3, { y: 20 });
+  F.to('#over', t17 - 0.05, { autoAlpha: 1, duration: 0.01 }); F.leave('#over', FOLD0 - 0.2, { dur: 0.3 });
+  F.to('#objs', FOLD0, { autoAlpha: 0, duration: 0.5, ease: 'power2.in' });
+  gsap.set('#score', { transformOrigin: `${CX}px ${SY}px` });
+  F.to('#score', FOLD0, { scaleX: C, duration: FOLD1 - FOLD0, ease: 'expo.inOut' });
+  F.sound(FOLD0, 'rise', { dur: 1.5 }); F.sound(FOLD1 - 0.05, 'thump', { f: 52, dur: 1 });
+  const MW = 1700; at('#link', CX - 420, 940); F.type('#link', F.W(18, 'Ссылка'), REPO, { cps: 22 });
+  at('#mit', CX - 330, 1012); F.rise('#mit', F.E(18) - 0.2, { y: 16 });
+  [...'oneshot'].forEach(ch => { const s = document.createElement('span'); s.textContent = ch; $('#mark').appendChild(s); });
+  at('#mark', CX - 470, 300);
+  [...document.querySelectorAll('#mark span')].forEach((s, i) => F.tl.fromTo(s, { y: -160, autoAlpha: 0, scaleY: 1.2 }, { y: 0, autoAlpha: 1, scaleY: 1, duration: 0.7, ease: 'bounce.out', immediateRender: false }, F.L(19) + i * 0.06));
+  gsap.set('#mark span', { autoAlpha: 0 });
+  at('#hEnd', CX + 230, 520); F.rise('#hEnd', F.W(19, 'зазвучит'), { y: 30, rot: -4 });
+  F.sound(F.L(19) + 0.1, 'chord', { dur: 3.2 });
+}
+
+// ═══ камера: страницы партитуры ═══
+// камера стоит, пока курсор пересекает страницу, и переезжает к следующей между фразами
+const PAGES = [
+  [0, F.E(2) + 0.3, 1.0, 560], [F.L(3) - 0.2, F.E(3) + 0.2, 1.22, 520], [F.L(4) - 0.1, F.E(4) + 0.2, 1.18, 520],
+  [F.L(5) - 0.1, F.E(5) + 0.2, 0.9, 520], [F.L(6) - 0.1, F.E(6) + 0.3, 0.88, 520], [F.L(7) - 0.2, F.E(8) + 0.2, 0.84, 520],
+  [F.L(9) - 0.1, F.E(9) + 0.3, 1.0, 520],
+];
+const RULES = [[F.L(11) - 0.3, F.E(11) + 0.2, 1.0, 470], [F.L(12) - 0.1, F.E(12) + 0.2, 0.98, 470], [F.L(13) - 0.1, F.E(13) + 0.2, 1.2, 470],
+  [F.L(14) - 0.1, F.E(14) + 0.2, 0.92, 470], [F.L(15) - 0.1, F.E(15) + 0.3, 1.05, 470], [F.L(16) - 0.1, F.E(16) + 0.3, 0.98, 470]];
+const keys = []; const glide = 0.55;
+const page = ([a, b, z, y], first) => { const x = X((a + b) / 2); if (!first) keys.push({ t: a + 0.15, x, y, zoom: z, ease: 'power3.inOut' }); else keys.push({ t: 0, x, y, zoom: z }); keys.push({ t: b - glide, x, y, zoom: z }); };
+PAGES.forEach((p, i) => page(p, i === 0));
+// общий план правил на фразе 10
+const RX = (X(RB[0]) + X(RB[5])) / 2;
+keys.push({ t: F.L(10) + 0.2, x: RX, y: 420, zoom: 0.17, ease: 'expo.inOut' }, { t: F.E(10) - 0.1, x: RX, y: 420, zoom: 0.17 });
+RULES.forEach((p, i) => { page(p, false); if (i === 0) keys[keys.length - 2].t = p[0] + 0.75; });
+// обзор всей партитуры, потом гармошка до кадра 1:1
+const ALLX = (X0 + LEN) / 2;
+keys.push({ t: F.L(17) + 0.3, x: ALLX, y: 700, zoom: 1700 / (LEN - X0 + 600), ease: 'expo.inOut' }, { t: FOLD0, x: ALLX, y: 700, zoom: 1700 / (LEN - X0 + 600) });
+keys.push({ t: FOLD1, x: CX, y: 640, zoom: 1.0, ease: 'expo.inOut' }, { t: VO.total, x: CX, y: 640, zoom: 1.0 });
+keys.sort((a, b) => a.t - b.t);
+F.camera(keys);
+F.handheld([[F.L(5), F.E(6)], [F.L(11), F.E(16)]], 3);
+
+// объекты прошлых страниц приглушаются, когда камера уходит: внимание — на текущей
+[...PAGES, ...RULES].forEach(([a, b]) => OBJS.filter(o => o.t >= a && o.t < b).forEach(o => F.to(o.obj, b - 0.2, { autoAlpha: 0.22, duration: 0.6, ease: 'power2.inOut' })));
+
+// камера переезжает — тихий «вжух»
+keys.forEach((k, i) => { if (i && k.ease && keys[i - 1] && Math.abs(k.x - keys[i - 1].x) > 300) F.sound(keys[i - 1].t + 0.05, 'whoosh', { dur: Math.min(0.9, k.t - keys[i - 1].t + 0.2), gain: 0.45, f0: 250, f1: 1800 }); });
+
+// ═══ разметка для проверки ═══
+F.thread('ph'); F.thread('score');
+F.beat(0, 'вступление');
+// нить — курсор воспроизведения; на общих планах курсор слишком тонкий, там нить — сам стан
+[[3, 'что это'], [4, 'партитура'], [5, 'нота = событие'], [6, 'движок'], [7, 'установка'], [9, 'через агента'], [10, 'пять правил', 'score'],
+ [11, 'голос', 'score'], [12, 'перезапись'], [13, 'концепты'], [14, 'без склеек'], [15, 'темп'], [16, 'черновик'], [17, 'бесплатно', 'score']].forEach(([i, n, th]) => F.beat(F.L(i) - 0.1, n, { thread: th || 'ph' }));
+F.beat(FOLD0 + 0.1, 'гармошка', { thread: 'score' }); F.beat(F.L(19), 'имя', { thread: 'score' });
+F.keep('#mark', F.L(19) + 0.9, VO.total); F.keep('#link', F.E(18), VO.total); F.keep('#term', F.L(8), F.E(8));
+
+F.expose();
+</script>
+</body>
+</html>

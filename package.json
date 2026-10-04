@@ -1,0 +1,14 @@
+{
+  "name": "oneshot",
+  "version": "0.1.0",
+  "description": "Скилл для ИИ-агентов: объясняющие и промо-ролики на HTML + GSAP, собранные от голоса диктора, одним дублем.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Artem Islamov",
+  "bin": { "oneshot": "bin/oneshot.mjs" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "playwright": "^1.48.0"
+  }
+}

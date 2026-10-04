@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>oneshot · ролик</title>
+<link rel="stylesheet" href="style.css">
+<!-- <link rel="stylesheet" href="fonts.css">  ← после `oneshot fonts …` -->
+<style>
+  #title{left:560px;top:478px;font:800 120px/1 var(--display);text-transform:uppercase;white-space:nowrap}
+  #dot{position:absolute;border-radius:50%;background:var(--accent)}
+  #note{left:560px;top:646px;font:500 44px/1.2 var(--text);color:var(--muted);white-space:nowrap}
+  #dot .t{position:absolute;left:44px;top:34px;font:600 40px/1.2 var(--mono);white-space:pre}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="ground"></div>
+  <div id="world">
+    <div id="dot"><div class="t" id="boxt"></div></div>
+    <div id="title" class="a">oneshot</div>
+    <div id="note" class="a">движение на слове</div>
+  </div>
+</div>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/oneshot.js"></script>
+<script src="vo/plan.js"></script>
+<script>
+// ПАРТИТУРА. Время берём из голоса: F.L(n) — начало фразы n, F.E(n) — конец, F.W(n, 'слово') — момент слова.
+// Нить: точка #dot живёт весь ролик и превращается в каждую следующую сцену — переходы держатся на ней.
+const F = OS.film({ duration: VO.total });
+
+// точка → полоса под заголовком → карточка
+F.place('#dot', { x: 940, y: 520, w: 40, h: 40, r: 20 });
+F.pop('#dot', 0.2, { from: 0.2 });
+F.morph('#dot', F.W(1, 'первый'), 0.6, { x: 560, y: 610, w: 800, h: 10, r: 5 });
+F.rise('#title', F.W(1, 'oneshot'));
+F.rise('#note', F.W(2, 'своём'));
+F.leave(['#title', '#note'], F.L(3) - 0.2);
+F.morph('#dot', F.L(3), 0.7, { x: 1860, y: 300, w: 1000, h: 420, r: 22 });       // полоса вырастает в карточку
+F.to('#dot', F.L(3) + 0.1, { backgroundColor: '#181A21', duration: 0.5, ease: 'power2.inOut' });
+F.type('#boxt', F.W(3, 'текст'), 'lines.txt → plan.js\n→ ролик', { cps: 20 });
+
+// камера: стоит, пока говорят; едет между фразами
+F.camera([
+  { t: 0, x: 960, y: 560, zoom: 1.15 },
+  { t: F.L(3) - 0.1, x: 960, y: 560, zoom: 1.15 },
+  { t: F.L(3) + 0.8, x: 2360, y: 510, zoom: 1.05, ease: 'expo.inOut' },
+]);
+
+// разметка: переходы и их нити, что держать в кадре, звуки
+F.thread('dot');
+F.beat(0, 'начало');
+F.beat(F.L(2), 'на слове', { thread: 'dot' });
+F.beat(F.L(3), 'перестройка', { thread: 'dot' });
+F.keep('#dot', F.L(3) + 1, VO.total);
+F.sound(0.2, 'pop', { x: 960 }).sound(F.W(1, 'первый'), 'whoosh', { x: 960 }).sound(F.L(3), 'whoosh', { x: 2000 }).sound(F.L(3) + 0.8, 'thump');
+
+F.expose();
+</script>
+</body>
+</html>

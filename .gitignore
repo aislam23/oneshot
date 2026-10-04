@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+**/vendor/
+**/stills/
+**/.oneshot-*/
+*.mp4
+*.render.json
+examples/*/sfx.wav
+examples/*/mix*.wav
+examples/*/vo/guide.wav

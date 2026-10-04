@@ -1,0 +1,14 @@
+/* Токены стиля. Поменяйте цвета и шрифты под бренд: всё остальное написано через них. */
+:root{
+  --bg:#0E0F13; --ink:#F2F3F6; --muted:#9097A6; --accent:#3D5AFE; --card:#181A21; --line:rgba(242,243,246,.12);
+  --display:'Arial Narrow','Helvetica Neue',sans-serif; --text:system-ui,-apple-system,'Segoe UI',sans-serif; --mono:ui-monospace,Menlo,monospace;
+}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg)}
+body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
+/* сетка на фоне едет медленнее мира — так видно движение камеры даже на пустом месте */
+#ground{position:absolute;inset:0;background-image:radial-gradient(circle,var(--line) 1.4px,transparent 1.6px)}
+#world{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}
+.a{position:absolute;left:0;top:0}
+.card{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:22px;box-sizing:border-box;box-shadow:0 40px 90px -40px rgba(0,0,0,.6)}
+.os-caret{display:inline-block;width:3px;height:1em;background:var(--accent);vertical-align:-.12em;margin-left:3px}
