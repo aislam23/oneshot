@@ -8,3 +8,5 @@ node_modules/
 examples/*/sfx.wav
 examples/*/mix*.wav
 examples/*/vo/guide.wav
+**/.oneshot/
+gallery/.frames/

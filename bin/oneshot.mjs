@@ -17,11 +17,15 @@ const HELP = `oneshot — ролики на HTML + GSAP, собранные от
   oneshot render comp.html [--out draft.mp4] [--audio mix.wav] [--from 10 --to 20]
                                                   черновик 1080p30 с размытием движения
   oneshot render comp.html --final                финал 4K60 (только после утверждения)
-  oneshot check comp.html [--video draft.mp4]     проверка: нити, ритм, кадр, текст, паузы, звук
+  oneshot check comp.html [--video draft.mp4]     проверка: переходы (сама), подмены, ритм, однообразие, камера, мусор, текст, звук
+  oneshot lint comp.html                          синтаксис, съеденный код, лишние элементы (без браузера, за секунду)
+  oneshot snap comp.html [--update]               снимки ключевых кадров до и после правки — что изменилось во всём ролике
+  oneshot ref reference.mp4                       разбор референса в цифрах: покой, склейки, длины планов, энергия
+  oneshot gallery                                 словарь движений: gallery/moves.png и замеры в docs/moves.md
 `;
 
 const [cmd, ...rest] = process.argv.slice(2);
-const o = args(rest, { flags: ['final', 'force', 'noSay'] });
+const o = args(rest, { flags: ['final', 'force', 'noSay', 'update'] });
 try {
   switch (cmd) {
     case 'doctor': await (await import('../lib/tools.mjs')).doctor(); break;
@@ -37,6 +41,10 @@ try {
     case 'sfx': await (await import('../lib/sfx.mjs')).sfx(o._[0], o); break;
     case 'mix': await (await import('../lib/sfx.mjs')).mix(o); break;
     case 'render': await (await import('../lib/render.mjs')).render(o._[0], o); break;
+    case 'lint': { const r = await (await import('../lib/lint.mjs')).lint(o._[0]); process.exitCode = r.problems.length ? 2 : 0; break; }
+    case 'snap': await (await import('../lib/snap.mjs')).snap(o._[0], o); break;
+    case 'ref': await (await import('../lib/ref.mjs')).ref(o._[0], o); break;
+    case 'gallery': await (await import('../lib/gallery.mjs')).gallery(); break;
     case 'check': { const v = await (await import('../lib/check.mjs')).check(o._[0], o); process.exitCode = v === 'ПРОВАЛ' ? 2 : 0; break; }
     default: log(HELP);
   }

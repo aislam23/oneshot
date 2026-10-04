@@ -205,7 +205,7 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 // и переезжает на следующую. Нить через весь ролик — стан и курсор. В финале партитура складывается
 // гармошкой в один кадр, над ним падает имя.
 // ══════════════════════════════════════════════════════════════════════════════════════════════
-const F = OS.film({ duration: VO.total, grid: 64 });
+const F = OS.film({ duration: VO.total, grid: 64, strict: false });   // антипример написан до модели «жизнь элемента»
 const X0 = 600, PX = 300, X = t => X0 + t * PX, LEN = X(VO.total) + 400;
 const SY = 820, pitchY = p => 860 - p * 10;               // стан: линии на 780…860, нота p = 0…8
 const $ = s => document.querySelector(s);

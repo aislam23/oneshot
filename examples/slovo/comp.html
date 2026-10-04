@@ -71,7 +71,8 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 #dgMask{position:absolute;overflow:hidden;width:620px;height:900px}
 #dgCol{position:absolute;left:0;top:0;width:620px}
 #dgCol div{height:900px;font-size:1080px;line-height:900px;text-align:center;color:var(--ink)}
-#pr{font-size:170px}
+#prA,#prB{font-size:170px}
+#prB b{color:var(--link)}
 #pr b{color:var(--link)}
 .rt{font-size:230px}
 .wav i{position:absolute;bottom:0;width:22px;border-radius:11px;background:var(--link)}
@@ -125,14 +126,13 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
     </div>
 
     <div id="dgMask"><div id="dgCol"><div class="disp">5</div><div class="disp">1</div><div class="disp">2</div><div class="disp">3</div><div class="disp">4</div><div class="disp">5</div></div></div>
-    <div id="pr" class="a disp">Правил<br><b>сильного</b><br>ролика</div>
+    <div id="prA" class="a disp">Правил</div><div id="prB" class="a disp"><b>Сильного</b><br>ролика</div>
     <!-- 1 -->
-    <div id="r1a" class="a disp rt">Голос</div><div id="wav1" class="a wav"></div>
+<div id="wav1" class="a wav"></div>
     <div id="r1b" class="a disp rt" style="color:var(--muted)">Текст</div>
     <div id="pic"><div class="sun"></div><div class="mt"></div></div>
     <!-- 2 -->
     <div class="cd" id="cd0"><svg width="300" height="300"><circle cx="150" cy="150" r="40" fill="#1F2BFF"/></svg><div class="t disp">Точка</div></div>
-    <div class="cd" id="cd1"><svg width="300" height="300"><rect x="70" y="80" width="160" height="140" rx="12" fill="none" stroke="#0A0A0A" stroke-width="8"/><rect x="115" y="120" width="70" height="60" rx="8" fill="#1F2BFF"/></svg><div class="t disp">Зум</div></div>
     <div class="cd" id="cd2"><svg width="300" height="300"><text x="150" y="190" text-anchor="middle" font-family="Sofia Sans Extra Condensed" font-weight="900" font-size="130" fill="#0A0A0A">АБВ</text></svg><div class="t disp">Слово</div></div>
     <!-- 3 -->
     <div id="cutl"></div>
@@ -200,11 +200,11 @@ const SH = [
 const shapes = w1.map((ch, i) => { const b = box(ch), s = Math.min(b.w, b.h) * (i === 4 ? 0.55 : 0.82), d = document.createElement('div'); d.className = 'shape';
   d.style.cssText += `;${SH[i].css};left:${b.cx - s / 2}px;top:${b.cy - s / 2}px;width:${s}px;height:${s}px`; $('#shapes').appendChild(d); gsap.set(d, { autoAlpha: 0 }); return d; });
 const tS = W(1, 'слово'), tK = W(1, 'картинкой');
-w1.forEach((c, i) => F.tl.fromTo(c, { y: -720, autoAlpha: 1 }, { y: 0, duration: 0.75, ease: 'bounce.out', immediateRender: false }, tS - 0.35 + i * 0.07));
-gsap.set(w1, { y: -720 });
+// буквы падают с весом: ускорение, удар, сплющивание по скорости, отскок; каждый удар чуть толкает камеру
+w1.forEach((c, i) => { F.drop(c, tS - 0.5 + i * 0.07, { height: 760, squash: 0.32 }); F.shake(F._lastHits[0].t, 3 + i, 9); });
 w1.forEach((c, i) => F.tl.to(c, { scale: 0.25, autoAlpha: 0, duration: 0.3, ease: 'power3.in' }, tK - 0.1 + i * 0.06));
 shapes.forEach((d, i) => F.tl.fromTo(d, { autoAlpha: 0, scale: 0.25, rotation: -40 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.6, ease: 'back.out(2.2)', immediateRender: false }, tK + 0.12 + i * 0.06));
-F.sound(tS - 0.2, 'thump', { x: A.x, f: 70 }); w1.forEach((c, i) => F.sound(tS + 0.2 + i * 0.07, 'click', { x: box(c).cx, gain: 0.5 }));
+w1.forEach((c, i) => F.sound(tS - 0.5 + i * 0.07 + Math.sqrt(2 * 760 / 5200), 'thump', { x: box(c).cx, f: 64 + i * 6, gain: 0.55 }));
 shapes.forEach((d, i) => F.sound(tK + 0.12 + i * 0.06, 'pop', { x: box(d).cx, f: 420 + i * 70, gain: 0.7 }));
 
 // ═══ 2 · ONESHOT; нырок в букву О ═══
@@ -233,11 +233,15 @@ F.tl.fromTo('#cc', { x: 1900, autoAlpha: 1 }, { x: 0, duration: 0.45, ease: 'exp
 F.tl.fromTo('#cx', { x: -1900, autoAlpha: 1 }, { x: 0, duration: 0.45, ease: 'expo.out', immediateRender: false }, tX - 0.15); gsap.set('#cx', { autoAlpha: 0 });
 at('#hOther', A.x + 260, A.y + 330); F.pop('#hOther', tA - 0.1, { rot: -6, y: 20, from: 0.7 });
 F.sound(tC - 0.15, 'whoosh', { x: A.x + 600, dur: 0.4, f0: 2500, f1: 500 }); F.sound(tX - 0.15, 'whoosh', { x: A.x - 600, dur: 0.4, f0: 2500, f1: 500 });
-F.shake(tC + 0.25, 6); F.shake(tX + 0.25, 6);
+F.shake(tC + 0.25, 6); F.shake(tX + 0.25, 6); F.wobble('#cc', tC + 0.22, { rot: 2.2, amp: 0.05 }); F.wobble('#cx', tX + 0.22, { rot: -2.2, amp: 0.05 });
 
 // ═══ 4 · текст → по секундам ═══
 const t4 = L(4), tT = W(4, 'текст'), tRz = W(4, 'раскладывает'), tSec = W(4, 'секундам');
-['#logo', '#cc', '#cx', '#hOther'].forEach((s, i) => { F.tl.to(s, { y: `+=${2700 + i * 80}`, rotation: (i % 2 ? 1 : -1) * (8 + i * 3), duration: 1.0, ease: 'power2.in' }, t4 - 0.25 + i * 0.07); F.tl.to(s, { autoAlpha: 0, duration: 0.2 }, t4 + 0.6 + i * 0.07); });
+// слова не падают за кадр, а слетаются в одну точку — туда, где начнётся печать фразы; из неё родится курсор
+{ const P = { x: B.x - 760 + 8, y: B.y - 230 + 30 }, hb = box('#hOther');
+  [['#logo', A.x, A.y - 330], ['#cc', A.x, A.y + 30], ['#cx', A.x, A.y + 250], ['#hOther', hb.cx, hb.cy]].forEach(([s, cx, cy], i) => {
+    F.tl.to(s, { x: `+=${P.x - cx}`, y: `+=${P.y - cy}`, scale: 0.02, rotation: (i % 2 ? 1 : -1) * 25, duration: 0.85, ease: 'power3.in' }, t4 - 0.3 + i * 0.06);
+    F.tl.set(s, { autoAlpha: 0 }, t4 + 0.55 + i * 0.06); }); F.shake(t4 + 0.62, 7, 8); F.sound(t4 + 0.6, 'pop', { f: 700, gain: 1.1 }); }
 const LINE1 = VO.lines[0];
 at('#voLab', B.x - 760, B.y - 300); F.rise('#voLab', tT - 0.2, { y: 20 });
 at('#vo', B.x - 760, B.y - 230); F.type('#vo', tT, LINE1.text, { cps: 34 });
@@ -290,17 +294,26 @@ TR.forEach(([a, w], i) => { const d = document.createElement('div'); d.className
 for (let i = 0; i < 8; i++) { const f = document.createElement('div'); f.className = 'fr'; at(f, B.x - 560 + i * 260, B.y + 40); f.innerHTML = `<i style="left:${14 + i * 22}px"></i><b>${String(i + 1).padStart(4, '0')}</b>`; $('#strip').appendChild(f);
   F.pop(f, tKd + 0.05 + i * 0.13, { y: 60, from: 0.4, ease: 'back.out(2)' }); F.sound(tKd + 0.05 + i * 0.13, 'click', { gain: 0.35, x: B.x - 560 + i * 260 }); }
 F.to(wS, tKd + 0.5, { y: '-=420', duration: 0.6, ease: 'power3.in' });
-center('#blur', C.x, C.y - 40);
-F.tl.fromTo('#blur', { x: -2900, autoAlpha: 1 }, { x: 0, duration: 0.24, ease: 'expo.out', immediateRender: false }, tBl - 0.08); gsap.set('#blur', { autoAlpha: 0 });
-F.tl.to(['#strip', '#tracks'], { y: '+=900', rotation: 9, duration: 0.6, ease: 'power3.in' }, tBl + 0.12); F.tl.to(['#strip', '#tracks'], { autoAlpha: 0, duration: 0.1 }, tBl + 0.7);
-F.shake(tBl + 0.16, 16, 6); F.sound(tBl - 0.08, 'whoosh', { dur: 0.35, f0: 600, f1: 5000, gain: 1.4 }); F.sound(tBl + 0.16, 'thump', { f: 55 });
+// восемь кадров плёнки слетаются и становятся восемью буквами РАЗМЫТИЕ — смаз рождается из кадров
+center('#blur', C.x, C.y - 40); const bl = F.split('#blur');
+$$('#strip .fr').forEach((f, i) => { const lb = box(bl[i]), fx = B.x - 560 + i * 260 + 115, fy = B.y + 40 + 65, t0 = tBl - 0.3 + i * 0.03;
+  gsap.set(bl[i], { autoAlpha: 0 });
+  F.tl.to(f, { x: lb.cx - fx, y: lb.cy - fy, scale: 0.55, rotation: (i - 3.5) * 4, duration: 0.32, ease: 'power3.in' }, t0);
+  F.tl.set(f, { autoAlpha: 0 }, t0 + 0.32); F.tl.set(bl[i], { autoAlpha: 1 }, t0 + 0.32);
+  F.tl.fromTo(bl[i], { scaleX: 1.6, scaleY: 0.7 }, { scaleX: 1, scaleY: 1, duration: 0.4, ease: 'back.out(3)', immediateRender: false }, t0 + 0.32); });
+F.tl.to('#tracks', { y: '+=700', duration: 0.5, ease: 'power3.in' }, tBl - 0.1); F.tl.to('#tracks', { autoAlpha: 0, duration: 0.1 }, tBl + 0.4);
+F.shake(tBl + 0.25, 16, 6); F.punch('#blur', tBl + 0.24, { scale: 1.07 }); F.sound(tBl - 0.3, 'whoosh', { dur: 0.5, f0: 600, f1: 5000, gain: 1.4 }); F.sound(tBl + 0.25, 'thump', { f: 55 });
 
 // ═══ 7 · установка: буквы падают, УСТАНОВКА из-под маски, курсор → терминал ═══
 const t7 = L(7), tU = W(7, 'Установка'), tTe = W(7, 'терминале');
-const bl = F.split('#blur');
-bl.forEach((c, i) => F.tl.to(c, { y: 900, rotation: (i % 2 ? 1 : -1) * (20 + i * 4), autoAlpha: 0, duration: 0.7, ease: 'power2.in' }, tU - 0.35 + i * 0.03));
-{ const ib = box('#inst'); const mw = ib.w + 40, mh = 270; at('#instMask', C.x - mw / 2, C.y - 180); $('#instMask').style.width = mw + 'px'; $('#instMask').style.height = mh + 'px'; at('#inst', 20, 10);
-  F.tl.fromTo('#inst', { y: 300 }, { y: 0, duration: 0.6, ease: 'expo.out', immediateRender: false }, tU); gsap.set('#inst', { y: 300 }); }
+// перетасовка: буквы РАЗМЫТИЕ сами перелетают на места букв УСТАНОВКА и по дороге перещёлкиваются в новые
+{ const ib = box('#inst'); const mw = ib.w + 40, mh = 270; at('#instMask', C.x - mw / 2, C.y - 180); $('#instMask').style.width = mw + 'px'; $('#instMask').style.height = mh + 'px'; at('#inst', 20, 10); }
+const ins = F.split('#inst'), blRest = bl.map(c => box(c));
+ins.forEach((c, i) => { const tb = box(c), j = Math.min(i, bl.length - 1), t0 = tU - 0.35 + i * 0.045; gsap.set(c, { autoAlpha: 0 });
+  if (i < bl.length) { const src = bl[i], sb = blRest[i];
+    F.tl.to(src, { x: tb.cx - sb.cx, y: tb.cy - sb.cy, scale: 300 / 330, rotation: 0, duration: 0.5, ease: 'expo.inOut' }, t0);
+    F.scramble(src, t0 + 0.05, 0.4, c.textContent, { from: src.textContent }); F.tl.set(src, { autoAlpha: 0 }, t0 + 0.5); F.tl.set(c, { autoAlpha: 1 }, t0 + 0.5); }
+  else { F.pop(c, t0 + 0.4, { y: -30, from: 0.4, ease: 'back.out(3)' }); } });
 F.sound(tU, 'whoosh', { dur: 0.5, f0: 300, f1: 1600 });
 // курсор после слова — он и вырастет в терминал
 const TERM = { x: C.x - 860, y: C.y - 300, w: 1720, h: 600, r: 24 };
@@ -310,7 +323,7 @@ const car = document.createElement('div'); car.id = 'bigcar'; car.style.cssText 
 F.tl.to('#instMask', { y: -120, autoAlpha: 0, duration: 0.4, ease: 'power3.in' }, tTe - 0.3);
 F.morph(car, tTe - 0.2, 0.6, TERM, 'expo.inOut'); F.to(car, tTe - 0.1, { backgroundColor: '#07080C', duration: 0.4 });
 F.place('#term', TERM); gsap.set('#term', { autoAlpha: 0 }); F.tl.set('#term', { autoAlpha: 1 }, tTe + 0.4); F.tl.set(car, { autoAlpha: 0 }, tTe + 0.42);
-F.sound(tTe - 0.2, 'swell', { dur: 0.9, f: 110, gain: 1.2 }); F.sound(tTe + 0.38, 'thump', { f: 60 });
+F.sound(tTe - 0.2, 'swell', { dur: 0.9, f: 110, gain: 1.2 }); F.wobble('#term', tTe + 0.42, { rot: 0.5, amp: 0.015 }); F.sound(tTe + 0.38, 'thump', { f: 60 });
 
 // ═══ 8 · команда — камера ведёт курсор печати ═══
 const t8 = L(8), tZ = W(8, 'зависимости');
@@ -332,7 +345,7 @@ F.to(['#t1', '#t2', '#t3', '#tpg'], tPr - 0.2, { autoAlpha: 0, duration: 0.2 });
 F.to('#chat', tPr + 0.35, { opacity: 1, duration: 0.3 });
 F.type('#me', tAg - 0.1, [['', 'Установи oneshot\n'], ['lnk', REPO]], { cps: 26, caret: false });
 gsap.set('#re', { autoAlpha: 0 }); F.pop('#re', tUs + 0.35, { y: 20, from: 0.9 });
-F.to('#send', tUs + 0.12, { keyframes: [{ scale: 0.82, duration: 0.07 }, { scale: 1, duration: 0.35, ease: 'back.out(4)' }] });
+F.punch('#send', tUs + 0.12, { scale: 0.8 }); F.wobble('#re', tUs + 0.5, { rot: 1.5, amp: 0.03 });
 F.cursor('#cur', { path: [{ t: tUs - 0.9, x: CHAT.x + CHAT.w + 260, y: CHAT.y + CHAT.h + 220 }, { t: tUs + 0.05, x: CHAT.x + CHAT.w - 80, y: CHAT.y + CHAT.h - 82, ease: 'power3.out' }, { t: tUs + 0.9, x: CHAT.x + CHAT.w - 80, y: CHAT.y + CHAT.h - 82 }, { t: tUs + 1.5, x: CHAT.x + CHAT.w + 300, y: CHAT.y + CHAT.h + 300 }], clicks: [tUs + 0.12], show: [[tUs - 0.9, tUs + 1.5]] });
 F.sound(tPr - 0.1, 'whoosh', { dur: 0.6, f0: 1800, f1: 400 }); F.sound(tUs + 0.12, 'click', { gain: 1.2 }); F.sound(tUs + 0.35, 'tick', { f: 1318, gain: 1.1 });
 
@@ -343,17 +356,20 @@ gsap.set('#dgMask', { autoAlpha: 0 });
 F.tl.set('#dgMask', { autoAlpha: 1 }, t10 - 0.9);   // цифра уже стоит — камера садится на неё
 F.tl.fromTo('#dgMask', { scale: 1.18 }, { scale: 1, duration: 0.45, ease: 'expo.out', immediateRender: false }, tP5);
 F.shake(tP5 + 0.2, 14, 6); F.sound(tP5, 'thump', { f: 50, dur: 1 }); F.sound(t10 - 0.5, 'whoosh', { dur: 0.7, f0: 300, f1: 2600, gain: 1.2 });
-at('#pr', E.x - 200, E.y - 330); F.rise('#pr', W(10, 'правил'), { y: 60 });
+at('#prA', E.x - 200, E.y - 330); at('#prB', E.x - 200, E.y - 187); F.rise('#prA', W(10, 'правил'), { y: 60 }); F.rise('#prB', W(10, 'правил') + 0.08, { y: 60 });
 // заголовок не уходит: сжимается в шапку и живёт через все правила
-F.to('#pr', L(11) - 0.4, { x: 760, y: -140, scale: 0.3, transformOrigin: '0 0', duration: 0.65, ease: 'expo.inOut' });
+// «ПРАВИЛ» само перещёлкивается в «ГОЛОС» и становится заголовком правила; «СИЛЬНОГО РОЛИКА» сжимается в шапку «5 правил»
+F.text('#prA', 0, 'Правил'); F.scramble('#prA', L(11) - 0.35, 0.5, 'Голос', { from: 'Правил' });
+F.to('#prA', L(11) - 0.35, { x: 40, y: -70, fontSize: 230, duration: 0.65, ease: 'expo.inOut' });
+F.text('#prB', 0, '<b>Сильного</b><br>ролика'); F.scramble('#prB', L(11) - 0.3, 0.45, '5 правил', { from: 'Сильного ролика' });
+F.to('#prB', L(11) - 0.4, { x: 760, y: -283, scale: 0.3, transformOrigin: '0 0', duration: 0.65, ease: 'expo.inOut' });
 // цифра крутится, как счётчик: 5 → 1 → 2 → 3 → 4 → 5
 const ROLL = [[11, 'Один', 1], [12, 'Два', 2], [13, 'Три', 3], [14, 'Четыре', 4], [16, 'Пять', 5]];
-ROLL.forEach(([l, w, idx]) => { const t = W(l, w); F.to('#dgCol', t - 0.15, { y: -idx * 900, duration: 0.55, ease: 'back.out(1.4)' }); F.sound(t - 0.15, 'whoosh', { dur: 0.4, f0: 900, f1: 300, gain: 0.7 }); F.sound(t + 0.25, 'click', { gain: 0.8 }); });
+ROLL.forEach(([l, w, idx]) => { const t = W(l, w); F.to('#dgCol', t - 0.15, { y: -idx * 900, duration: 0.55, ease: 'back.out(1.4)' }); F.punch('#dgMask', t + 0.2, { scale: 1.03 }); F.sound(t - 0.15, 'whoosh', { dur: 0.4, f0: 900, f1: 300, gain: 0.7 }); F.sound(t + 0.25, 'click', { gain: 0.8 }); });
 const RX = E.x - 160;   // правая колонка правил
 
 // ═══ правило 1: голос → волна; текст → картинка ═══
 const tGo = W(11, 'голоса'), tTx = W(11, 'текст'), tPic = W(11, 'картинка');
-at('#r1a', RX, E.y - 400); F.rise('#r1a', tGo - 0.15, { y: 80 });
 at('#wav1', RX + 10, E.y - 110); gsap.set('#wav1', { autoAlpha: 0 }); F.tl.set('#wav1', { autoAlpha: 1 }, tGo - 0.05);
 for (let i = 0; i < 34; i++) { const b = document.createElement('i'); b.style.left = (i * 30) + 'px'; $('#wav1').appendChild(b); }
 F.seg('#wav1', tGo, EN(11) + 0.3, (k, t) => { const on = Math.min(1, (t - tGo) * 3), off = 1 - Math.max(0, Math.min(1, (t - EN(11)) * 3)); $$('#wav1 i').forEach((b, i) => { const h = 8 + on * off * 110 * Math.abs(Math.sin(i * 0.7 + t * 8) * Math.sin(i * 0.23 + t * 3.1)); b.style.height = h.toFixed(1) + 'px'; b.style.top = (-h / 2).toFixed(1) + 'px'; }); });
@@ -370,19 +386,18 @@ F.sound(tPic, 'pop', { f: 500 });
 // ═══ правило 2: картинка сама становится средней картой, две другие выезжают из-под неё ═══
 const tTri = W(12, 'три'), tOne = W(12, 'один'), t12 = L(12);
 const CDX = [RX + 40, RX + 380, RX + 720], CARD = i => ({ x: CDX[i], y: E.y - 230, w: 300, h: 420, r: 24 });
-F.to(['#r1a', '#wav1'], t12 - 0.35, { y: '-=760', duration: 0.6, ease: 'power3.in' });         // голос уезжает вверх, его выталкивает карта
+F.to(['#prA', '#wav1'], t12 - 0.35, { y: '-=760', duration: 0.6, ease: 'power3.in' });         // голос уезжает вверх, его выталкивает карта
 F.morph('#pic', t12 - 0.3, 0.65, CARD(1), 'expo.inOut');
 F.to('#pic', t12 - 0.3, { borderWidth: 1, borderColor: 'rgba(10,10,10,.08)', boxShadow: '0 30px 70px -30px rgba(10,10,10,.35)', duration: 0.5 });
 F.to('#pic .mt', t12 - 0.3, { height: '30%', bottom: 150, duration: 0.6, ease: 'expo.inOut' });
 F.to('#pic .sun', t12 - 0.3, { width: 60, height: 60, right: 40, top: 40, duration: 0.6, ease: 'expo.inOut' });
 const picT = document.createElement('div'); picT.className = 't disp'; picT.textContent = 'Кадр'; picT.style.cssText = 'position:absolute;left:0;right:0;bottom:36px;text-align:center;font-size:84px'; $('#pic').appendChild(picT);
 gsap.set(picT, { autoAlpha: 0 }); F.rise(picT, W(12, 'Два'), { y: 30 });
-gsap.set('#cd1', { autoAlpha: 0 });
 [0, 2].forEach(i => { const el = $('#cd' + i); at(el, CDX[i], E.y - 230); gsap.set(el, { autoAlpha: 0 }); F.tl.set(el, { autoAlpha: 1 }, tTri - 0.08);
   F.tl.fromTo(el, { x: CDX[1] - CDX[i], rotation: 0 }, { x: 0, rotation: (i - 1) * 7, duration: 0.6, ease: 'expo.out', immediateRender: false }, tTri - 0.05 + (i ? 0.12 : 0));
   F.sound(tTri - 0.05 + (i ? 0.12 : 0), 'whoosh', { dur: 0.3, f0: 1200, f1: 3000, gain: 0.5, x: CDX[i] }); });
 F.cursor('#cur', { path: [{ t: tOne - 0.9, x: CDX[2] + 500, y: E.y + 520 }, { t: tOne - 0.02, x: CDX[2] + 170, y: E.y + 20, ease: 'power3.out' }, { t: tOne + 0.9, x: CDX[2] + 170, y: E.y + 20 }, { t: tOne + 1.5, x: CDX[2] + 600, y: E.y + 600 }], clicks: [tOne], show: [[tOne - 0.9, tOne + 1.5]] });
-F.to('#cd2', tOne + 0.02, { rotation: 0, y: -40, scale: 1.12, duration: 0.5, ease: 'back.out(2)' });
+F.to('#cd2', tOne + 0.02, { rotation: 0, y: -40, scale: 1.12, duration: 0.5, ease: 'back.out(2)' }); F.wobble('#cd2', tOne + 0.05, { rot: 3, amp: 0.03 });
 const t13 = L(13), tSk = W(13, 'склеек'), tVy = W(13, 'вырастает'), tPro = W(13, 'прошлой');
 F.seg('#cd2', tOne, tOne, (k, t, tr) => $('#cd2').classList.toggle('pick', tr >= tOne + 0.03 && tr < t13 - 0.3));
 ['#cd0', '#pic'].forEach((s, i) => F.to(s, tOne + 0.25 + i * 0.08, { rotationY: 90, y: 300, autoAlpha: 0, duration: 0.5, ease: 'power3.in' }));
@@ -418,7 +433,7 @@ F.morph('#grow', tR4 - 0.25, 0.65, { x: RX + 200, y: E.y - 270, w: 540, h: 540, 
 F.to('#grow .t', tR4 - 0.25, { fontSize: 80, left: 44, top: 40, duration: 0.6, ease: 'expo.inOut' }); F.to('#grow .t', tTm - 0.3, { fontSize: 190, duration: 0.45, ease: 'back.out(2)' });
 F.scramble('#grow .t', tTm - 0.3, 0.4, 'Темп', { from: 'Сцена 2' });
 F.tl.to('#grow', { keyframes: [{ scale: 1.07, duration: 0.1, ease: 'power2.out' }, { scale: 1, duration: 0.35, ease: 'power2.in' }], repeat: 1 }, tTm + 0.1);
-F.tl.set(['#grow', '#pr'], { autoAlpha: 0 }, tU1 - 0.02);
+F.tl.set(['#grow', '#prB'], { autoAlpha: 0 }, tU1 - 0.02);
 const VIEW = { x: E.x - 960, y: E.y - 540, w: 1920, h: 1080 };
 center('#hitA', E.x, E.y); center('#hitB', E.x, E.y);
 gsap.set(['#hitA', '#hitB'], { autoAlpha: 0 });
@@ -439,7 +454,7 @@ F.sound(tPa - 0.25, 'swell', { dur: 2.6, f: 98, gain: 0.8 });
 // ═══ правило 5: чёрный фон сжимается в черновик, черновик вырастает в 4K ═══
 const t16 = L(16), tDr = W(16, 'Черновик'), tCh = W(16, 'проверка'), t4k = W(16, '4K');
 F.tl.to('#pause', { autoAlpha: 0, duration: 0.25 }, t16 - 0.3);
-F.tl.set(['#dgMask', '#pr'], { autoAlpha: 1 }, t16 - 0.3);
+F.tl.set(['#dgMask', '#prB'], { autoAlpha: 1 }, t16 - 0.3);
 const DRF = { x: RX - 20, y: E.y - 300, w: 640, h: 360, r: 22 };
 F.morph('#drf', t16 - 0.3, 0.8, DRF, 'expo.inOut');
 gsap.set('#drfT', { autoAlpha: 0, fontSize: 150, top: 90 }); F.pop('#drfT', tDr - 0.1, { y: 20, from: 0.9 });
@@ -448,7 +463,7 @@ F.tl.fromTo('#drfP i', { width: '0%' }, { width: '100%', duration: 0.7, ease: 'p
 at('#chk', RX + 700, E.y - 290); $$('#chk .r').forEach((r, i) => { gsap.set(r, { autoAlpha: 0 }); F.pop(r, tCh - 0.05 + i * 0.22, { y: 16, from: 0.9 }); F.sound(tCh - 0.05 + i * 0.22, 'tick', { f: [784, 988, 1175][i] }); });
 // 4K: черновик вырастает во весь кадр
 F.to('#chk', t4k - 0.3, { autoAlpha: 0, x: 120, duration: 0.3, ease: 'power2.in' });
-F.tl.set(['#dgMask', '#pr'], { autoAlpha: 0 }, t4k);
+F.tl.set(['#dgMask', '#prB'], { autoAlpha: 0 }, t4k);
 F.morph('#drf', t4k - 0.05, 0.75, { x: VIEW.x, y: VIEW.y, w: VIEW.w, h: VIEW.h, r: 0 }, 'expo.inOut');
 F.scramble('#drfT', t4k - 0.05, 0.4, '4K', { from: '1080P' }); F.text('#drfT', 0, '1080p');
 F.to('#drfT', t4k - 0.05, { fontSize: 520, top: 230, duration: 0.75, ease: 'expo.inOut' });
@@ -461,7 +476,7 @@ const t17 = L(17), tFr = W(17, 'бесплатный'), tCm = W(17, 'комме�
 F.to(['#drfT', '#drfP'], tFr - 0.4, { autoAlpha: 0, duration: 0.3 });
 center('#stamp', E.x, E.y - 70); gsap.set('#stamp', { autoAlpha: 0 });
 F.tl.fromTo('#stamp', { autoAlpha: 1, scale: 2.6, rotation: -2 }, { scale: 1, rotation: -8, duration: 0.32, ease: 'power4.in', immediateRender: false }, tFr - 0.2);
-F.shake(tFr + 0.12, 20, 8); F.sound(tFr + 0.1, 'thump', { f: 46, dur: 1.2, gain: 1.4 }); F.sound(tFr + 0.1, 'click', { f: 120, gain: 1.3 });
+F.shake(tFr + 0.12, 20, 8); F.wobble('#stamp', tFr + 0.12, { rot: 2.5, amp: 0.04 }); F.sound(tFr + 0.1, 'thump', { f: 46, dur: 1.2, gain: 1.4 }); F.sound(tFr + 0.1, 'click', { f: 120, gain: 1.3 });
 at('#hCom', E.x + 120, E.y + 150); F.pop('#hCom', tCm - 0.2, { rot: -5, y: 20, from: 0.8 });
 // 4K-кадр сжимается в строку со ссылкой
 const LINK = { x: E.x - 720, y: E.y + 210, w: 1440, h: 150, r: 75 };
@@ -482,8 +497,24 @@ sh2.forEach((d, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / 5, R = 360;
   F.tl.to(d, { x: 0, y: 0, scale: 0.12, rotation: 300, duration: 0.32, ease: 'power3.in' }, t19 + 0.25 + i * 0.03);
   F.tl.set(d, { autoAlpha: 0 }, t19 + 0.62); });
 lg2.forEach((c, i) => { const b = box(c); F.tl.fromTo(c, { autoAlpha: 1, x: LC.x - b.cx, scale: 0.15 }, { x: 0, scale: 1, duration: 0.8, ease: 'expo.out', immediateRender: false }, t19 + 0.6 + Math.abs(i - 3) * 0.035); });
+F.land(t19 + 1.05, lg2, { at: { x: LC.x, y: LC.y + 100 }, amp: 22, speed: 1800, reach: 700 });   // буквы встали — волна от центра
 F.sound(t19 - 0.15, 'pop', { f: 700, gain: 1.2 }); F.sound(t19 + 0.25, 'rise', { dur: 0.4 }); F.sound(t19 + 0.6, 'thump', { f: 52, dur: 1.2 }); F.sound(t19 + 0.65, 'chord', { dur: 3.5 });
 at('#hEnd', E.x + 180, E.y - 10); F.pop('#hEnd', tSl + 0.45, { rot: -6, y: 30, from: 0.8, ease: 'expo.out', dur: 0.7 });
+
+// ═══ действующие лица: окно жизни каждого элемента в одном месте ═══
+// Вне окна элемент невидим. Всё, чего нет в списке и что не появляется через F.pop / F.drop, скрыто строгим режимом.
+const END = Infinity, CAST = [
+  ['#w1', 0, tK + 0.6], ['#logo', tO, t4 + 1.6], ['#inO', tR - 0.5, t3 + 0.6], ['#cc', tC - 0.2, t4 + 1.6], ['#cx', tX - 0.2, t4 + 1.6],
+  ['#voLab', tT - 0.2, tRz + 0.4], ['#vo', tT, tRz], ['#ruler', tRz, t5s + 0.5], ['#ticks', tRz, t5s + 0.5], ['#words', tRz - 0.1, tKd + 1.2], ['#ph', t5 - 0.05, PH1 + 0.3],
+  ['#tracks', tGs + 0.25, tBl + 0.8], ['#strip', tKd, tBl + 0.8], ['#blur', tBl - 0.1, tU + 1.2], ['#instMask', tU, tTe + 0.2], [car, tU + 0.5, tTe + 0.45],
+  ['#term', tTe + 0.4, tP5 + 0.8], ['#dgMask', t10 - 0.9, t4k + 0.05], ['#prA', W(10, 'правил'), t12 + 0.4], ['#prB', W(10, 'правил'), t4k + 0.05],
+  ['#wav1', tGo - 0.1, t12 + 0.4], ['#r1b', tTx - 0.15, tPic + 0.2], ['#pic', tPic - 0.05, tOne + 0.9],
+  ['#cd0', tTri - 0.08, tOne + 0.9], ['#cd2', tTri - 0.08, tVy + 0.85], [cd2r, tSk + 0.42, tVy + 0.85], ['#cutl', tSk + 0.2, tSk + 1.0], ['#grow', tVy - 0.1, tU1 - 0.02],
+  ['#hitA', tU1 - 0.02, tU2 - 0.02], ['#hitB', tU2 - 0.02, EN(14) + 0.8], ['#pause', tPa - 0.25, t16 - 0.05], ['#drf', tU2 - 0.02, END], ['#chk', tCh - 0.1, t4k + 0.05],
+  ['#stamp', tFr - 0.2, t19 - 0.15], ['#hCom', tCm - 0.2, t18 + 0.1], ['#link', t18 + 0.3, END], ['#logo2', t19 + 0.55, END], ['#hEnd', tSl + 0.45, END],
+];
+CAST.forEach(([el, a, b]) => F.life(el, { from: a, to: b }));
+shapes.forEach(d => F.life(d, { from: tK + 0.1, to: tO + 0.12 })); sh2.forEach(d => F.life(d, { from: t19 - 0.15, to: t19 + 0.62 }));
 
 // ═══ камера ═══
 const OCAM = { x: OC.x, y: OC.y, zoom: ZO };
@@ -491,29 +522,29 @@ F.camera([
   { t: 0, x: A.x, y: A.y, zoom: 1 }, { t: tO - 0.5, x: A.x, y: A.y, zoom: 1.04, ease: 'sine.inOut' },
   { t: tO + 0.3, x: A.x, y: A.y, zoom: 1, ease: 'expo.out' }, { t: tR - 0.45, x: A.x, y: A.y, zoom: 1 },
   { t: tR + 0.45, ...OCAM, ease: 'expo.inOut' }, { t: t3 - 0.05, ...OCAM },
-  { t: t3 + 0.85, x: A.x, y: A.y + 80, zoom: 1, ease: 'expo.inOut' }, { t: t4 - 0.3, x: A.x, y: A.y + 80, zoom: 1 },
-  { t: tT - 0.1, x: B.x, y: B.y - 90, zoom: 1, ease: 'power2.inOut' }, { t: tRz - 0.1, x: B.x, y: B.y - 90, zoom: 1 },
-  { t: tRz + 0.7, x: B.x + 40, y: B.y + 60, zoom: 0.92, ease: 'expo.inOut' }, { t: t5s - 0.1, x: B.x + 40, y: B.y + 60, zoom: 0.92 },
-  { t: t5s + 0.5, x: B.x, y: B.y, zoom: 1.05, ease: 'expo.out' }, { t: tKd - 0.2, x: B.x, y: B.y - 40, zoom: 1, ease: 'power2.inOut' },
-  { t: tKd + 1.2, x: B.x + 520, y: B.y + 60, zoom: 0.9, ease: 'sine.inOut' }, { t: tBl - 0.25, x: C.x, y: C.y, zoom: 1, ease: 'power3.inOut' },
+  { t: t3 + 0.85, x: A.x, y: A.y + 80, zoom: 1, move: 'chase' }, { t: t4 - 0.3, x: A.x, y: A.y + 80, zoom: 1 },
+  { t: t4 + 0.6, x: B.x - 120, y: B.y - 110, zoom: 1, ease: 'power3.in' }, { t: tT + 0.2, x: B.x, y: B.y - 90, zoom: 1, move: 'chase' }, { t: tRz - 0.1, x: B.x, y: B.y - 90, zoom: 1 },
+  { t: tRz + 0.7, x: B.x + 40, y: B.y + 60, zoom: 0.92, move: 'glide' }, { t: t5s - 0.1, x: B.x + 40, y: B.y + 60, zoom: 0.92 },
+  { t: t5s + 0.6, x: B.x, y: B.y, zoom: 1.05, move: 'chase' }, { t: tKd - 0.2, x: B.x, y: B.y - 40, zoom: 1, ease: 'power2.inOut' },
+  { t: tKd + 1.2, x: B.x + 520, y: B.y + 60, zoom: 0.9, move: 'glide' }, { t: tBl - 0.25, x: C.x, y: C.y, zoom: 1, move: 'chase' },
   { t: tTe - 0.25, x: C.x, y: C.y, zoom: 1 }, { t: tTe + 0.5, x: C.x, y: C.y, zoom: 0.94, ease: 'expo.inOut' },
   { t: t8 + 0.4, x: caretX(t8 + 0.4) - 120, y: C.y - 120, zoom: 1.45, ease: 'expo.inOut' },
   { t: t8 + CMD1.length / CPS1 - 0.1, x: caretX(t8 + CMD1.length / CPS1) - 280, y: C.y - 120, zoom: 1.45, ease: 'sine.inOut' },
-  { t: tZ + 0.2, x: C.x, y: C.y, zoom: 0.96, ease: 'expo.inOut' }, { t: tPr - 0.1, x: C.x, y: C.y, zoom: 0.96 },
-  { t: tPr + 0.6, x: C.x, y: C.y, zoom: 1.05, ease: 'expo.inOut' }, { t: tUs + 1.1, x: C.x + 30, y: C.y + 20, zoom: 1.12, ease: 'sine.inOut' },
+  { t: tZ + 0.2, x: C.x, y: C.y, zoom: 0.96, move: 'chase' }, { t: tPr - 0.1, x: C.x, y: C.y, zoom: 0.96 },
+  { t: tPr + 0.6, x: C.x, y: C.y, zoom: 1.05, move: 'glide' }, { t: tUs + 1.1, x: C.x + 30, y: C.y + 20, zoom: 1.12, ease: 'sine.inOut' },
   { t: t10 - 0.85, x: C.x + 30, y: C.y + 20, zoom: 1.12 },
-  { t: tP5 - 0.05, x: E.x, y: E.y, zoom: 1, ease: 'power3.inOut' },                                  // переброс вниз к цифре
+  { t: tP5 - 0.05, x: E.x, y: E.y, zoom: 1, move: 'whip' },                                  // переброс вниз к цифре
   { t: L(11) + 3, x: E.x + 40, y: E.y, zoom: 1.04, ease: 'sine.inOut' },
   { t: L(12) - 0.1, x: E.x, y: E.y, zoom: 1, ease: 'power2.inOut' }, { t: L(12) + 2.6, x: E.x + 60, y: E.y + 20, zoom: 1.06, rot: -0.02, ease: 'sine.inOut' },
-  { t: L(13) - 0.1, x: E.x, y: E.y, zoom: 1, rot: 0, ease: 'power2.inOut' }, { t: tVy + 0.2, x: E.x + 120, y: E.y - 40, zoom: 1.12, ease: 'expo.inOut' },
-  { t: tTm - 0.3, x: E.x, y: E.y, zoom: 1, ease: 'expo.inOut' }, { t: t16 - 0.35, x: E.x, y: E.y, zoom: 1 },
-  { t: tCh + 0.6, x: E.x + 60, y: E.y - 20, zoom: 1.06, ease: 'sine.inOut' }, { t: t4k - 0.05, x: E.x, y: E.y, zoom: 1, ease: 'power2.inOut' },
+  { t: L(13) - 0.1, x: E.x, y: E.y, zoom: 1, rot: 0, move: 'glide' }, { t: tVy + 0.2, x: E.x + 120, y: E.y - 40, zoom: 1.12, move: 'chase' },
+  { t: tTm - 0.3, x: E.x, y: E.y, zoom: 1, move: 'chase' }, { t: t16 - 0.35, x: E.x, y: E.y, zoom: 1 },
+  { t: tCh + 0.6, x: E.x + 60, y: E.y - 20, zoom: 1.06, ease: 'sine.inOut' }, { t: t4k - 0.05, x: E.x, y: E.y, zoom: 1, move: 'glide' },
   { t: VO.total, x: E.x, y: E.y, zoom: 1 },
-]);
+], { hand: 2.5 });   // «рука» сама: только пока камера едет
 F.handheld([[t8 + 0.5, tZ], [L(11), L(14)]], 3);
 
 // ═══ разметка ═══
-F.thread('shapes'); F.thread('logo'); F.thread('cc'); F.thread('words'); F.thread('wS'); F.thread('strip'); F.thread('bigcar'); F.thread('term'); F.thread('dgMask'); F.thread('drf'); F.thread('pr'); F.thread('pic'); F.thread('cd2'); F.thread('grow'); F.thread('stamp');
+F.thread('shapes'); F.thread('logo'); F.thread('cc'); F.thread('words'); F.thread('wS'); F.thread('strip'); F.thread('bigcar'); F.thread('term'); F.thread('dgMask'); F.thread('drf'); F.thread('prA'); F.thread('prB'); F.thread('pic'); F.thread('cd2'); F.thread('grow'); F.thread('stamp');
 F.beat(0, 'слово');
 F.beat(tO - 0.3, 'oneshot', { thread: 'shapes' });
 F.beat(tR, 'нырок в О', { thread: 'camera' });
@@ -526,7 +557,7 @@ F.beat(tBl, 'размытие', { thread: 'strip' });
 F.beat(tTe - 0.2, 'терминал', { thread: 'bigcar' });
 F.beat(tPr, 'чат', { thread: 'term' });
 F.beat(t10 - 0.3, 'пять правил', { thread: 'camera' });
-F.beat(L(11) - 0.1, 'правило 1', { thread: 'pr' }); F.beat(t12 - 0.1, 'правило 2', { thread: 'pic' }); F.beat(t13 - 0.1, 'правило 3', { thread: 'cd2' }); F.beat(tR4 - 0.1, 'правило 4', { thread: 'grow' });
+F.beat(L(11) - 0.1, 'правило 1', { thread: 'prA' }); F.beat(t12 - 0.1, 'правило 2', { thread: 'pic' }); F.beat(t13 - 0.1, 'правило 3', { thread: 'cd2' }); F.beat(tR4 - 0.1, 'правило 4', { thread: 'grow' });
 F.beat(tU1 - 0.02, 'удар', { cut: true }); F.beat(tU2 - 0.02, 'удар 2', { cut: true });
 F.beat(t16 - 0.3, 'правило 5', { thread: 'drf' });
 F.beat(t4k, '4K', { thread: 'drf' });
