@@ -45,7 +45,6 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 .tl{position:absolute;font:600 30px var(--mono);color:var(--muted);white-space:nowrap}
 #ruler{position:absolute;height:4px;background:var(--ink);transform-origin:0 50%}
 #ph{position:absolute;width:6px;height:260px;margin-left:-3px;background:var(--link);border-radius:3px;box-shadow:0 0 20px rgba(31,43,255,.4)}
-#big{font-size:320px;text-align:center}
 .trk{position:absolute;height:22px;border-radius:11px;background:rgba(10,10,10,.08)}
 .trk i{position:absolute;top:0;bottom:0;border-radius:11px;background:var(--link)}
 .fr{position:absolute;width:230px;height:130px;border-radius:14px;border:3px solid var(--ink);box-sizing:border-box;background:#fff}
@@ -83,12 +82,10 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 .cd .t{position:absolute;left:0;right:0;bottom:36px;text-align:center;font-size:84px}
 .cd svg{position:absolute;left:0;top:0}
 .cd.pick{outline:6px solid var(--link);outline-offset:-3px}
-.half{position:absolute;font-size:260px;white-space:nowrap}
 #cutl{position:absolute;height:8px;border-radius:4px;background:var(--bad);transform-origin:0 50%}
 #grow{position:absolute;background:var(--link)}
 #grow .t{position:absolute;left:40px;top:34px;font-size:110px;color:#fff;white-space:nowrap}
 #hitA,#hitB{position:absolute;font-size:640px;text-align:center}
-#inkbg{position:absolute;background:var(--stage)}
 #pause{font-size:260px;color:var(--stage-ink)}
 #drf{position:absolute;background:var(--stage);border-radius:22px;overflow:hidden;z-index:1}
 #hitB,#pause,#chk,#stamp,#hCom,#link,#logo2,#hEnd,#cur,.shape{z-index:2}
@@ -117,7 +114,6 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
     <div id="voLab" class="a">vo/lines.txt</div>
     <div id="vo" class="a"></div>
     <div id="ruler"></div><div id="ticks"></div><div id="words"></div><div id="ph"></div>
-    <div id="big" class="a disp"></div>
     <div id="tracks"></div>
     <div id="strip"></div>
     <div id="blur" class="a disp">Размытие</div>
@@ -139,11 +135,9 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
     <div class="cd" id="cd1"><svg width="300" height="300"><rect x="70" y="80" width="160" height="140" rx="12" fill="none" stroke="#0A0A0A" stroke-width="8"/><rect x="115" y="120" width="70" height="60" rx="8" fill="#1F2BFF"/></svg><div class="t disp">Зум</div></div>
     <div class="cd" id="cd2"><svg width="300" height="300"><text x="150" y="190" text-anchor="middle" font-family="Sofia Sans Extra Condensed" font-weight="900" font-size="130" fill="#0A0A0A">АБВ</text></svg><div class="t disp">Слово</div></div>
     <!-- 3 -->
-    <div id="hl" class="half disp">Склейки</div><div id="hr" class="half disp">Склейки</div><div id="cutl"></div>
+    <div id="cutl"></div>
     <div id="grow"><div class="t disp">Сцена 2</div></div>
     <!-- 4 -->
-    <div id="r4" class="a disp rt">Темп</div>
-    <div id="inkbg"></div>
     <div id="hitA" class="a disp">Удар.</div>
     <div id="hitB" class="a disp" style="color:var(--paper)">Удар.</div>
     <div id="pause" class="a disp">Пауза</div>
