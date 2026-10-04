@@ -1,6 +1,6 @@
 {
   "name": "oneshot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Скилл для ИИ-агентов: объясняющие и промо-ролики на HTML + GSAP, собранные от голоса диктора, одним дублем.",
   "type": "module",
   "license": "MIT",
