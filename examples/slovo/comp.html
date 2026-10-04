@@ -39,6 +39,8 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 #cx{font-size:230px}
 #hOther{font-size:120px}
 #vo{font:500 58px/1.1 var(--text);white-space:nowrap}
+#vo .vw{display:inline-block}
+#vo .vcar{position:absolute;top:8px;height:62px;width:4px;margin:0}
 #voLab{font:600 30px var(--mono);color:var(--muted)}
 .wd{position:absolute;font:600 40px var(--text);white-space:nowrap;transform-origin:50% 100%}
 .tick{position:absolute;width:3px;height:26px;background:var(--ink)}
@@ -87,9 +89,8 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 #grow{position:absolute;background:var(--link)}
 #grow .t{position:absolute;left:40px;top:34px;font-size:110px;color:#fff;white-space:nowrap}
 #hitA,#hitB{position:absolute;font-size:640px;text-align:center}
-#pause{font-size:260px;color:var(--stage-ink)}
 #drf{position:absolute;background:var(--stage);border-radius:22px;overflow:hidden;z-index:1}
-#hitB,#pause,#chk,#stamp,#hCom,#link,#logo2,#hEnd,#cur,.shape{z-index:2}
+#hitB,#chk,#stamp,#hCom,#link,#logo2,#hEnd,#cur,.shape{z-index:2}
 #drf .t{position:absolute;left:0;right:0;text-align:center;color:var(--stage-ink)}
 #drf .pg{position:absolute;left:8%;right:8%;height:12px;border-radius:6px;background:rgba(238,240,245,.15)}
 #drf .pg i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--link)}
@@ -114,7 +115,7 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 
     <div id="voLab" class="a">vo/lines.txt</div>
     <div id="vo" class="a"></div>
-    <div id="ruler"></div><div id="ticks"></div><div id="words"></div><div id="ph"></div>
+    <div id="ruler"></div><div id="ticks"></div><div id="ph"></div>
     <div id="tracks"></div>
     <div id="strip"></div>
     <div id="blur" class="a disp">Размытие</div>
@@ -140,7 +141,6 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
     <!-- 4 -->
     <div id="hitA" class="a disp">Удар.</div>
     <div id="hitB" class="a disp" style="color:var(--paper)">Удар.</div>
-    <div id="pause" class="a disp">Пауза</div>
     <!-- 5 -->
     <div id="drf"><div class="t disp" id="drfT">1080p</div><div class="pg" id="drfP"><i></i></div></div>
     <div id="chk" class="a"><div class="r" style="top:0"><i class="ck"></i>нить</div><div class="r" style="top:96px"><i class="ck"></i>ритм</div><div class="r" style="top:192px"><i class="ck"></i>текст</div></div>
@@ -244,17 +244,24 @@ const t4 = L(4), tT = W(4, 'текст'), tRz = W(4, 'раскладывает')
     F.tl.set(s, { autoAlpha: 0 }, t4 + 0.55 + i * 0.06); }); F.shake(t4 + 0.62, 7, 8); F.sound(t4 + 0.6, 'pop', { f: 700, gain: 1.1 }); }
 const LINE1 = VO.lines[0];
 at('#voLab', B.x - 760, B.y - 300); F.rise('#voLab', tT - 0.2, { y: 20 });
-at('#vo', B.x - 760, B.y - 230); F.type('#vo', tT, LINE1.text, { cps: 34 });
+// фраза печатается прямо в слова, которые потом полетят на линейку: одна фраза, ни одной копии
+at('#vo', B.x - 760, B.y - 230);
+const voEl = $('#vo'), TOK = LINE1.text.split(' '), tokEl = TOK.map(w => { const sp = document.createElement('span'); sp.className = 'vw'; sp.textContent = w; voEl.appendChild(sp); voEl.appendChild(document.createTextNode(' ')); return sp; });
+const vcar = document.createElement('i'); vcar.className = 'os-caret vcar'; voEl.appendChild(vcar);
+const R = tokEl.map(sp => box(sp)), CPS = 34, tTyped = tT + LINE1.text.length / CPS;
+F.seg('#vo', tT, tTyped, (k, tc, tr) => {
+  let n = tr < tT ? 0 : Math.floor((Math.min(tr, tTyped) - tT) * CPS + 1e-6), off = 0, last = -1;
+  TOK.forEach((w, i) => { const m = Math.max(0, Math.min(w.length, n - off)); tokEl[i].textContent = w.slice(0, m); if (m > 0) last = i; off += w.length + 1; });
+  const sp = tokEl[Math.max(0, last)]; vcar.style.left = (last < 0 ? 0 : sp.offsetLeft + sp.offsetWidth + 4) + 'px';
+  vcar.style.opacity = tr >= tT && tr < tRz && (tr < tTyped || Math.floor((tr - tTyped) * 2.2) % 2 === 0) ? 1 : 0;
+});
 const PXS = 420, RX0 = B.x - 800, RY = B.y + 170, tl0 = LINE1.start;
-const LW = LINE1.words.filter(w => w.w);
-const ws = LW.map((w, i) => { const d = document.createElement('div'); d.className = 'wd'; d.textContent = w.w; $('#words').appendChild(d); return d; });
-// слова сначала стоят строкой на месте фразы, потом разлетаются по секундам
-const span = document.createElement('span'); span.style.cssText = 'position:absolute;visibility:hidden;font:600 40px "Golos Text";white-space:nowrap'; document.body.appendChild(span);
-let accX = B.x - 760; const WW = []; const startPos = ws.map(d => { span.textContent = d.textContent; const w = span.getBoundingClientRect().width; WW.push(w); const p = accX; accX += w + 16; return p; });
-ws.forEach((d, i) => { const tx = RX0 + (LW[i].t - tl0) * PXS, ty = RY - 64; at(d, startPos[i], B.y - 70); gsap.set(d, { autoAlpha: 0 });
-  F.tl.set(d, { autoAlpha: 1 }, tRz - 0.05);
-  F.tl.to(d, { keyframes: [{ y: -60, duration: 0.18, ease: 'power2.out' }, { x: tx - startPos[i], y: ty - (B.y - 70), duration: 0.55, ease: 'expo.inOut' }] }, tRz + i * 0.05); });
-F.tl.to('#vo', { autoAlpha: 0, duration: 0.05 }, tRz - 0.05);
+const LW = LINE1.words.filter(w => w.w), ws = [], WR = []; let dash = null;
+TOK.forEach((w, i) => { if (w.replace(/[^\p{L}\p{N}]/gu, '')) { ws.push(tokEl[i]); WR.push(R[i]); } else dash = tokEl[i]; });
+const SW = 40 / 58, TC = ws.map((d, i) => ({ x: RX0 + (LW[i].t - tl0) * PXS + WR[i].w * SW / 2, y: RY - 40 }));
+ws.forEach((d, i) => { gsap.set(d, { transformOrigin: '50% 50%' });
+  F.tl.to(d, { keyframes: [{ y: -50, duration: 0.18, ease: 'power2.out' }, { x: TC[i].x - WR[i].cx, y: TC[i].y - WR[i].cy, scale: SW, duration: 0.55, ease: 'expo.inOut' }] }, tRz + i * 0.05); });
+if (dash) F.tl.to(dash, { scale: 0, autoAlpha: 0, duration: 0.3, ease: 'power2.in' }, tRz);
 F.tl.to('#voLab', { autoAlpha: 0, y: -20, duration: 0.3 }, tRz);
 at('#ruler', RX0 - 40, RY); $('#ruler').style.width = (PXS * 4.4 + 80) + 'px'; F.tl.fromTo('#ruler', { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'expo.inOut', immediateRender: false }, tRz); gsap.set('#ruler', { scaleX: 0 });
 for (let s = 0; s <= 4; s++) { const tk = document.createElement('div'); tk.className = 'tick'; at(tk, RX0 + s * PXS - 1.5, RY - 11); $('#ticks').appendChild(tk);
@@ -275,8 +282,7 @@ const wS = ws[2] || ws[1], iS = ws.indexOf(wS); wS.id = 'wS';
 F.tl.to('#ph', { autoAlpha: 0, duration: 0.2 }, PH1 + 0.05);
 ws.forEach((d, i) => { if (d !== wS) F.tl.to(d, { autoAlpha: 0, y: '+=40', duration: 0.3 }, t5s - 0.1 + i * 0.02); });
 ['#ruler', '#ticks'].forEach(s => F.tl.to(s, { autoAlpha: 0, duration: 0.3 }, t5s - 0.1));
-{ const cx = RX0 + (LW[iS].t - tl0) * PXS + WW[iS] / 2, cy = RY - 64 + 24;
-  F.tl.to(wS, { x: `+=${B.x - cx}`, y: `+=${B.y - cy}`, scale: 7, transformOrigin: '50% 50%', duration: 0.75, ease: 'expo.inOut' }, t5s); }
+F.tl.to(wS, { x: `+=${B.x - TC[iS].x}`, y: `+=${B.y - TC[iS].y}`, scale: 280 / 58, duration: 0.75, ease: 'expo.inOut' }, t5s);   // то же слово вырастает во весь кадр
 F.sound(t5s + 0.55, 'thump', { f: 62 });
 
 // ═══ 6 · HTML, GSAP, кадр за кадром, размытие ═══
@@ -284,7 +290,7 @@ const tH = W(6, 'HTML'), tGs = W(6, 'GSAP'), tKd = W(6, 'кадр'), tBl = W(6, 
 F.text(wS, 0, wS.textContent);
 F.scramble(wS, tH - 0.1, 0.5, '<HTML>', { from: 'слово' }); F.sound(tH - 0.1, 'key', { gain: 2 });
 F.scramble(wS, tGs - 0.1, 0.45, 'GSAP', { from: '<HTML>' });
-F.to(wS, tGs + 0.25, { y: '-=200', scale: 4.9, duration: 0.5, ease: 'expo.inOut' });
+F.to(wS, tGs + 0.25, { y: '-=200', scale: 196 / 58, duration: 0.5, ease: 'expo.inOut' });
 const TR = [[0, 0.35], [0.25, 0.4], [0.55, 0.3]], RAIL = B.y + 186;
 TR.forEach(([a, w], i) => { const d = document.createElement('div'); d.className = 'trk'; d.style.cssText += `;left:${B.x - 560}px;top:${B.y + 10 + i * 56}px;width:1120px`; d.innerHTML = `<i style="left:${a * 100}%;width:${w * 100}%"></i>`; $('#tracks').appendChild(d);
   F.tl.fromTo(d, { scaleX: 0, transformOrigin: '0 50%' }, { scaleX: 1, duration: 0.5, ease: 'expo.out', immediateRender: false }, tGs + 0.3 + i * 0.1); gsap.set(d, { scaleX: 0 });
@@ -435,25 +441,26 @@ F.scramble('#grow .t', tTm - 0.3, 0.4, 'Темп', { from: 'Сцена 2' });
 F.tl.to('#grow', { keyframes: [{ scale: 1.07, duration: 0.1, ease: 'power2.out' }, { scale: 1, duration: 0.35, ease: 'power2.in' }], repeat: 1 }, tTm + 0.1);
 F.tl.set(['#grow', '#prB'], { autoAlpha: 0 }, tU1 - 0.02);
 const VIEW = { x: E.x - 960, y: E.y - 540, w: 1920, h: 1080 };
-center('#hitA', E.x, E.y); center('#hitB', E.x, E.y);
+center('#hitA', E.x, E.y); at('#hitB', E.x - 960, E.y - 0.42 * 640); $('#hitB').style.width = '1920px';   // по центру при любой ширине текста
 gsap.set(['#hitA', '#hitB'], { autoAlpha: 0 });
 F.tl.set('#hitA', { autoAlpha: 1 }, tU1 - 0.02); F.tl.set('#hitA', { autoAlpha: 0 }, tU2 - 0.02);
 F.tl.set('#dgMask', { autoAlpha: 0 }, tU1 - 0.02);
 F.place('#drf', { x: VIEW.x - 200, y: VIEW.y - 200, w: VIEW.w + 400, h: VIEW.h + 400, r: 0 }); gsap.set('#drf', { autoAlpha: 0 });
 // чёрный фон удара — это будущий черновик
 F.tl.set('#drf', { autoAlpha: 1 }, tU2 - 0.02); F.tl.set('#hitB', { autoAlpha: 1 }, tU2 - 0.02);
-F.tl.to('#hitB', { autoAlpha: 0, duration: 0.6, ease: 'power2.in' }, EN(14) + 0.1);
+F.tl.to('#hitB', { opacity: 0.38, duration: 0.9, ease: 'power2.inOut' }, EN(14) + 0.1);   // тишина: удар тускнеет, но не исчезает
 F.shake(tU1, 22, 7); F.shake(tU2, 28, 7);
 F.sound(tU1 - 0.02, 'thump', { f: 48, dur: 1.1, gain: 1.4 }); F.sound(tU2 - 0.02, 'thump', { f: 42, dur: 1.4, gain: 1.6 });
 // ПАУЗА: буквы медленно расходятся в тишине
-const pa = F.split('#pause'); center('#pause', E.x, E.y);
-gsap.set('#pause', { autoAlpha: 0 }); F.tl.to('#pause', { autoAlpha: 1, duration: 0.6 }, tPa - 0.25);
-pa.forEach((c, i) => F.tl.fromTo(c, { x: 0 }, { x: (i - (pa.length - 1) / 2) * 70, duration: 2.6, ease: 'sine.inOut', immediateRender: false }, tPa - 0.25));
+// УДАР. само перещёлкивается в ПАУЗУ, становится меньше и медленно разводит буквы — одна надпись, без подмены
+F.text('#hitB', 0, 'Удар.'); F.scramble('#hitB', tPa - 0.35, 0.5, 'Пауза', { from: 'Удар.' });
+F.to('#hitB', tPa - 0.35, { opacity: 1, fontSize: 260, top: E.y - 0.42 * 260, duration: 0.6, ease: 'expo.inOut' });
+F.to('#hitB', tPa + 0.25, { letterSpacing: '0.32em', duration: 2.4, ease: 'sine.inOut' });
 F.sound(tPa - 0.25, 'swell', { dur: 2.6, f: 98, gain: 0.8 });
 
 // ═══ правило 5: чёрный фон сжимается в черновик, черновик вырастает в 4K ═══
 const t16 = L(16), tDr = W(16, 'Черновик'), tCh = W(16, 'проверка'), t4k = W(16, '4K');
-F.tl.to('#pause', { autoAlpha: 0, duration: 0.25 }, t16 - 0.3);
+F.tl.to('#hitB', { autoAlpha: 0, duration: 0.25 }, t16 - 0.3);
 F.tl.set(['#dgMask', '#prB'], { autoAlpha: 1 }, t16 - 0.3);
 const DRF = { x: RX - 20, y: E.y - 300, w: 640, h: 360, r: 22 };
 F.morph('#drf', t16 - 0.3, 0.8, DRF, 'expo.inOut');
@@ -505,12 +512,12 @@ at('#hEnd', E.x + 180, E.y - 10); F.pop('#hEnd', tSl + 0.45, { rot: -6, y: 30, f
 // Вне окна элемент невидим. Всё, чего нет в списке и что не появляется через F.pop / F.drop, скрыто строгим режимом.
 const END = Infinity, CAST = [
   ['#w1', 0, tK + 0.6], ['#logo', tO, t4 + 1.6], ['#inO', tR - 0.5, t3 + 0.6], ['#cc', tC - 0.2, t4 + 1.6], ['#cx', tX - 0.2, t4 + 1.6],
-  ['#voLab', tT - 0.2, tRz + 0.4], ['#vo', tT, tRz], ['#ruler', tRz, t5s + 0.5], ['#ticks', tRz, t5s + 0.5], ['#words', tRz - 0.1, tKd + 1.2], ['#ph', t5 - 0.05, PH1 + 0.3],
+  ['#voLab', tT - 0.2, tRz + 0.4], ['#vo', tT, tKd + 1.2], ['#ruler', tRz, t5s + 0.5], ['#ticks', tRz, t5s + 0.5], ['#ph', t5 - 0.05, PH1 + 0.3],
   ['#tracks', tGs + 0.25, tBl + 0.8], ['#strip', tKd, tBl + 0.8], ['#blur', tBl - 0.1, tU + 1.2], ['#instMask', tU, tTe + 0.2], [car, tU + 0.5, tTe + 0.45],
   ['#term', tTe + 0.4, tP5 + 0.8], ['#dgMask', t10 - 0.9, t4k + 0.05], ['#prA', W(10, 'правил'), t12 + 0.4], ['#prB', W(10, 'правил'), t4k + 0.05],
   ['#wav1', tGo - 0.1, t12 + 0.4], ['#r1b', tTx - 0.15, tPic + 0.2], ['#pic', tPic - 0.05, tOne + 0.9],
   ['#cd0', tTri - 0.08, tOne + 0.9], ['#cd2', tTri - 0.08, tVy + 0.85], [cd2r, tSk + 0.42, tVy + 0.85], ['#cutl', tSk + 0.2, tSk + 1.0], ['#grow', tVy - 0.1, tU1 - 0.02],
-  ['#hitA', tU1 - 0.02, tU2 - 0.02], ['#hitB', tU2 - 0.02, EN(14) + 0.8], ['#pause', tPa - 0.25, t16 - 0.05], ['#drf', tU2 - 0.02, END], ['#chk', tCh - 0.1, t4k + 0.05],
+  ['#hitA', tU1 - 0.02, tU2 - 0.02], ['#hitB', tU2 - 0.02, t16 - 0.05], ['#drf', tU2 - 0.02, END], ['#chk', tCh - 0.1, t4k + 0.05],
   ['#stamp', tFr - 0.2, t19 - 0.15], ['#hCom', tCm - 0.2, t18 + 0.1], ['#link', t18 + 0.3, END], ['#logo2', t19 + 0.55, END], ['#hEnd', tSl + 0.45, END],
 ];
 CAST.forEach(([el, a, b]) => F.life(el, { from: a, to: b }));
@@ -544,13 +551,13 @@ F.camera([
 F.handheld([[t8 + 0.5, tZ], [L(11), L(14)]], 3);
 
 // ═══ разметка ═══
-F.thread('shapes'); F.thread('logo'); F.thread('cc'); F.thread('words'); F.thread('wS'); F.thread('strip'); F.thread('bigcar'); F.thread('term'); F.thread('dgMask'); F.thread('drf'); F.thread('prA'); F.thread('prB'); F.thread('pic'); F.thread('cd2'); F.thread('grow'); F.thread('stamp');
+F.thread('shapes'); F.thread('logo'); F.thread('cc'); F.thread('wS'); F.thread('strip'); F.thread('bigcar'); F.thread('term'); F.thread('dgMask'); F.thread('drf'); F.thread('prA'); F.thread('prB'); F.thread('pic'); F.thread('cd2'); F.thread('grow'); F.thread('stamp');
 F.beat(0, 'слово');
 F.beat(tO - 0.3, 'oneshot', { thread: 'shapes' });
 F.beat(tR, 'нырок в О', { thread: 'camera' });
 F.beat(t3 + 0.2, 'агенты', { thread: 'camera' });
 F.beat(t4, 'текст', { thread: 'cc' });
-F.beat(tRz, 'по секундам', { thread: 'words' });
+F.beat(tRz, 'по секундам');
 F.beat(t5s, 'слово растёт', { thread: 'wS' });
 F.beat(tKd, 'кадры', { thread: 'wS' });
 F.beat(tBl, 'размытие', { thread: 'strip' });
